@@ -39,7 +39,6 @@ def create_test_app() -> FastAPI:
 
 test_app = create_test_app()
 
-print(test_app)
 
 
 # Створення та видалення таблиць при тестах

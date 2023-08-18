@@ -9,21 +9,21 @@ from eth_account import Account
 from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from config_fastapi import settings
 from starlette import status
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 from . import schemas
-from .models import Wallet, Transaction
+from .models import Wallet, Transaction, TransactionStatus, Asset
 
 
 class WalletService:
-    def __init__(self, session_factory: AsyncSession):
+    def __init__(self, session_factory: AsyncSession, provider_url: str):
         self.session_factory = session_factory
+        self.provider_url = provider_url
 
     # Провайдер для роботи з Web3
     async def provider(self):
-        provider = Web3(Web3.WebsocketProvider(settings.INFURA_URI))
+        provider = Web3(Web3.WebsocketProvider(self.provider_url))
         provider.middleware_onion.inject(geth_poa_middleware, layer=0)
         return provider
 
@@ -79,11 +79,8 @@ class WalletService:
         async with self.session_factory() as db:
             try:
                 decode_key = decode_hex(private_key)
-                print(decode_key)
                 pk = keys.PrivateKey(decode_key)
-                print(pk)
                 public = pk.public_key
-                print(public)
                 public_key = public.to_checksum_address()
 
                 if any(wallet.address == public_key for wallet in await self.get_wallets_user(user_id)):
@@ -106,6 +103,9 @@ class WalletService:
             balance = provide.eth.get_balance(item.address)
             result = await db.execute(select(Wallet).where(Wallet.address == item.address))
             wallet = result.scalars().first()
+            if wallet.asset_id is not None:
+                asset = await db.get(Asset, wallet.asset_id)
+                balance = balance / (int("1" + ("0" * asset.decimal_places)))
             if wallet is None:
                 raise HTTPException(detail='Така адреса не зареєстрована на сервері',
                                     status_code=status.HTTP_400_BAD_REQUEST)
@@ -149,20 +149,23 @@ class WalletService:
             signed_tx = provider.eth.account.sign_transaction(txn, item.private_key)
             txn_hash = provider.eth.send_raw_transaction(signed_tx.rawTransaction)
             async with self.session_factory() as db:
-                transaction = Transaction(**item.model_dump(), hash=txn_hash, date_send=datetime.now(), txn_fee=gas_price)
+                transaction = Transaction(from_send=item.from_send, to_send=item.to_send, value=item.value, hash=txn_hash.hex(), date_send=datetime.now(), txn_fee=gas_price, status=TransactionStatus.pending)
                 db.add(transaction)
-                await db.commit
+                await db.commit()
                 await db.refresh(transaction)
             return provider.to_hex(txn_hash)
-        except ValueError:
-            raise HTTPException(detail='Не вийшло провести транзакцію', status_code=status.HTTP_400_BAD_REQUEST)
+        except ValueError as e:
+            raise HTTPException(detail=f'Не вийшло провести транзакцію. Error: {e}', status_code=status.HTTP_400_BAD_REQUEST)
 
     # Отримання транзакції по її хешу
     async def get_transaction(self, txn_hash: str):
         provider = await self.provider()
-        txn = provider.eth.get_transaction_receipt(txn_hash)
-        txn_json = provider.to_json(txn)
-        return json.loads(txn_json)
+        try:
+            txn = provider.eth.get_transaction_receipt(txn_hash)
+            txn_json = provider.to_json(txn)
+            return json.loads(txn_json)
+        except Exception:
+            raise HTTPException(detail='Транзакції не було знайдено', status_code=status.HTTP_404_NOT_FOUND)
 
 
 

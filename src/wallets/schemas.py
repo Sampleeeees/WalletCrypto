@@ -1,5 +1,5 @@
 from typing import Union
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 class WalletBase(BaseModel):
@@ -16,6 +16,10 @@ class WalletList(WalletBase):
     """Схема для отримання всіх гаманців на сервері"""
     private_key: str
 
+    @field_validator("private_key")
+    def mask_private_key(cls, value):
+        return value[:10] + ("*" * (len(value) - 10))
+
 
 class CheckBalance(BaseModel):
     """Схема для введеня адреси гаманця"""
@@ -25,6 +29,10 @@ class Wallet(WalletBase):
     """Схема для відображення ключа та користувача"""
     private_key: str
     user_id: int
+
+    @field_validator("private_key")
+    def mask_private_key(cls, value):
+        return value[:10] + ("*" * (len(value) - 10))
 
 
 class WalletCreate(BaseModel):
@@ -42,6 +50,7 @@ class TransactionCreate(BaseModel):
     to_send: str
     value: Union[int, float]
     private_key: str
+
 
 class TransactionInfo(BaseModel):
     """Схема для відображення інформації транзакції"""

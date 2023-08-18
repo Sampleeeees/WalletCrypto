@@ -15,7 +15,7 @@ from src.core.containers import Container
 
 chat_router = APIRouter()
 
-@chat_router.get('/message/current_user', status_code=status.HTTP_200_OK)
+@chat_router.get('/message/current-user/', status_code=status.HTTP_200_OK)
 @inject
 async def get_message_current_user(request: Request,
                                    permission: Permission = Depends(Provide[Container.permission]),
@@ -29,7 +29,7 @@ async def get_message_current_user(request: Request,
                 return messages
             raise HTTPException(detail='У вас немає жодного повідомлення', status_code=status.HTTP_404_NOT_FOUND)
 
-@chat_router.get('/message/{msg_id}', status_code=status.HTTP_200_OK)
+@chat_router.get('/message/{msg_id}/', status_code=status.HTTP_200_OK)
 @inject
 async def send_message(request: Request,
                        msg_id: int,

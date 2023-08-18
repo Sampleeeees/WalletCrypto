@@ -54,7 +54,7 @@ async def login_user(response: Response, item: LoginUser, user_service: UserServ
             'username': user.username,
             'email': user.email}
 
-@auth_router.post('/logout', status_code=status.HTTP_200_OK)
+@auth_router.post('/logout/', status_code=status.HTTP_200_OK)
 @inject
 async def logout(response: Response, request: Request, permission: Permission = Depends(Provide[Container.permission])):
     print(permission)

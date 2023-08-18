@@ -14,23 +14,23 @@ from ..core.containers import Container
 
 user_router = APIRouter()
 
-@user_router.get("/user/profile", status_code=status.HTTP_200_OK, response_model=schemas.UserProfile)
+@user_router.get("/user/profile/", status_code=status.HTTP_200_OK, response_model=schemas.UserProfile)
 @inject
 async def get_current(request: Request, permission: Permission = Depends(Provide[Container.permission])) -> Optional[User]:
     user = await permission.get_current_user(request)
     return user
 
-@user_router.get("/user/{user_id}", status_code=status.HTTP_200_OK)
+@user_router.get("/user/{user_id}/", status_code=status.HTTP_200_OK)
 @inject
 async def get_user_by_id(user_id: int, user_service: UserService = Depends(Provide[Container.user_service])):
     return await user_service.get_user(user_id=user_id)
 
-@user_router.get("/users", status_code=status.HTTP_200_OK, response_model=List[schemas.UserProfile])
+@user_router.get("/users/", status_code=status.HTTP_200_OK, response_model=List[schemas.UserProfile])
 @inject
 async def get_all_users(user_service: UserService = Depends(Provide[Container.user_service])) -> List[User]:
     return await user_service.get_users()
 
-@user_router.patch("/user", status_code=status.HTTP_200_OK, response_model=schemas.UserProfile)
+@user_router.patch("/user/", status_code=status.HTTP_200_OK, response_model=schemas.UserProfile)
 @inject
 async def update_user(request: Request, item:schemas.UpdateUserProfile, permission: Permission = Depends(Provide[Container.permission])) -> Optional[User]:
     current_user = await permission.get_current_user(request)
@@ -40,7 +40,7 @@ async def update_user(request: Request, item:schemas.UpdateUserProfile, permissi
 
     return await permission.user_service.update_user(current_user=current_user.id, item=item)
 
-@user_router.delete("/user", status_code=status.HTTP_200_OK)
+@user_router.delete("/user/", status_code=status.HTTP_200_OK)
 @inject
 async def delete_me(request: Request, response: Response, permission: Permission = Depends(Provide[Container.permission])) -> dict:
     current_user = await permission.get_current_user(request)
@@ -48,7 +48,7 @@ async def delete_me(request: Request, response: Response, permission: Permission
     response.delete_cookie(key='Authorization')
     return {'detail': "Користувача видалено"}
 
-@user_router.delete("/user/{user_id}", status_code=status.HTTP_200_OK)
+@user_router.delete("/user/{user_id}/", status_code=status.HTTP_200_OK)
 @inject
 async def delete_user(user_id:int, request:Request, permission: Permission = Depends(Provide[Container.permission])) -> dict:
     if await permission.is_admin(request):
