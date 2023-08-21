@@ -42,6 +42,7 @@ APPS_SERVICE = [
     "src.wallets",
     'src.authentication',
     'src.parser',
+    'src.core',
 ]
 
 
@@ -74,3 +75,8 @@ ORIGINS = [
     "http://127.0.0.1:8000",
     "http://127.0.0.1:8001"
 ]
+
+
+BUNNY_API_KEY = env("BUNNY_API_KEY")
+BUNNY_STORAGE_NAME = env("BUNNY_STORAGE_NAME")
+BUNNY_STORAGE_REGION = env("BUNNY_STORAGE_REGION")

@@ -6,6 +6,7 @@ from config_fastapi import settings
 ALGORITHM = "HS256"
 access_token_jwt_subject = "access"
 
+# Створення токену
 def create_token(user_id: int) -> dict:
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
@@ -15,7 +16,7 @@ def create_token(user_id: int) -> dict:
         "token_type": "bearer",
     }
 
-
+# Генерація access token та часу його дії
 def create_access_token(*, data: dict, expires_delta: timedelta = None) -> str:
     """Створення токену"""
     to_encode = data.copy()

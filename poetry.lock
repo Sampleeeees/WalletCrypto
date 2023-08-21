@@ -491,6 +491,20 @@ files = [
 ]
 
 [[package]]
+name = "bunnycdnpython"
+version = "0.0.8"
+description = "A python SDK for BunnyCDN"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "bunnycdnpython-0.0.8-py3-none-any.whl", hash = "sha256:105d3a6a1835e03ea786db52710cad040efb849981e6297ff160fc53e2ca8e7f"},
+    {file = "bunnycdnpython-0.0.8.tar.gz", hash = "sha256:e2a88051b97be667a9a5c24ba6cb2ff86f455973f56b54af69f58a969a42b064"},
+]
+
+[package.dependencies]
+requests = "*"
+
+[[package]]
 name = "cachetools"
 version = "5.3.1"
 description = "Extensible memoizing collections and decorators"
@@ -3559,4 +3573,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<4.0"
-content-hash = "31a20479628a76833631a61d052650fb5117543055a9574b485d945ce33a8016"
+content-hash = "d718a8894d23bddeff9bf385aff98bd306cc7f9913350b4291e521d34481d83c"

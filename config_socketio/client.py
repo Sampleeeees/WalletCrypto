@@ -29,6 +29,7 @@ async def main():
     await sio_client.connect('http://127.0.0.1:8001')
     # await sio_client.emit('event', 'Hello')
     await sio_client.emit('test', 'Woah')
+    # await sio_client.emit('testing', 'Woah')
 
     #await sio_client.wait()
 

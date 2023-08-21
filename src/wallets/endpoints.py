@@ -1,7 +1,11 @@
 from typing import List
-from pydantic import TypeAdapter
+
+from propan import RabbitBroker
+from socketio import AsyncAioPikaManager
 from starlette.requests import Request
 
+from config_fastapi import settings
+from config_fastapi.fastapi_manager import fastapi_mgr
 from src.authentication.permissions import Permission
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
@@ -10,7 +14,6 @@ from dependency_injector.wiring import Provide, inject
 from src.core.containers import Container
 from .models import Wallet
 from .service import WalletService
-from .web3_service import Web3Service
 
 wallet_router = APIRouter()
 
@@ -99,6 +102,14 @@ async def get_transaction_by_hash(txn_hash: str,
     user = await permission.get_current_user(request)
     if user:
         if txn_hash.startswith("0x"):
-            transaction = await wallet_service.get_transaction(txn_hash)
-            return schemas.TransactionInfo(**transaction, from_send=transaction['from'])
+            transaction = await wallet_service.get_transaction_in_db(txn_hash)
+            return transaction
         raise HTTPException(detail='Ви ввели невірний хеш', status_code=status.HTTP_400_BAD_REQUEST)
+
+
+@wallet_router.get('/testing/', status_code=status.HTTP_200_OK)
+async def check_asyncpika(message: str):
+    async with RabbitBroker(settings.RABBITMQ_URI) as broker:
+        await broker.publish('get_balance', queue='socketio')
+
+    await fastapi_mgr.emit('get_balance', f'{message}')

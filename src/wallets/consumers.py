@@ -1,4 +1,12 @@
-from propan import RabbitBroker
+from propan import RabbitBroker, RabbitRouter
+from propan.brokers.rabbit import RabbitExchange, ExchangeType
 
-broker = RabbitBroker("amqp://guest:guest@localhost:5672/")
+wallet_consumer = RabbitRouter()
+
+socketio_exchange = RabbitExchange(name='socketio', type=ExchangeType.FANOUT)
+
+
+@wallet_consumer.handle(queue='socketio', exchange=socketio_exchange)
+async def get_test_mgr(body):
+    print(body)
 

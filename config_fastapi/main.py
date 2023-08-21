@@ -3,7 +3,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from config_fastapi import settings
 import src
-from config_socketio.client import sio_client
+
 from src.core.routers import routers
 from src.core.containers import Container
 from config_socketio.socket_application import socketio_app
@@ -25,6 +25,7 @@ def create_app() -> FastAPI:
     app.mount("/socketio/", socketio_app)
     return app
 
-
 app = create_app()
+
+
 

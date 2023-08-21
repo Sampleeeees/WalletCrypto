@@ -6,6 +6,7 @@ import emails
 from emails.template import JinjaTemplate
 from config_fastapi import settings
 
+
 def send_mail(email_to: str, subject_template="", html_template="", data_send: dict = None) -> None:
     """Відправка email"""
     message = emails.Message(

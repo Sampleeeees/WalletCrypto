@@ -20,6 +20,7 @@ class ParserService:
         block_number = provider.eth.get_block('latest')['number']
         if self.previous_block_number is None:
             self.previous_block_number = block_number
+            return block_number
 
         print('PreviousBlock', self.previous_block_number)
         print('Block', block_number)
@@ -32,6 +33,7 @@ class ParserService:
                 list_itter.append(i)
                 async with RabbitBroker(settings.RABBITMQ_URI) as broker:
                     await broker.publish(message=i, queue='parser/parser_queue')
-        self.previous_block_number = block_number
-        return block_number
+            self.previous_block_number = block_number
+            return block_number
+        return None
 

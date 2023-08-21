@@ -2,6 +2,7 @@ from typing import Optional, List
 
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, Response, Request
+from config_fastapi.fastapi_manager import fastapi_mgr
 from sqlalchemy.orm import Session
 from starlette import status
 from src.authentication.exceptions import BadRequestException
@@ -18,6 +19,7 @@ user_router = APIRouter()
 @inject
 async def get_current(request: Request, permission: Permission = Depends(Provide[Container.permission])) -> Optional[User]:
     user = await permission.get_current_user(request)
+    await fastapi_mgr.emit('test', 'Woah')
     return user
 
 @user_router.get("/user/{user_id}/", status_code=status.HTTP_200_OK)

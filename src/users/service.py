@@ -12,11 +12,13 @@ from .schemas import UserRegistration, LoginUser
 from .security import get_password_hash
 from src.authentication.exceptions import BadRequestException, NotFoundException
 from ..authentication.jwt import create_token
+from ..core.storage_bunny import BunnyStorage
 
 
 class UserService:
-    def __init__(self, session_factory: AsyncSession) -> None:
+    def __init__(self, session_factory: AsyncSession, bunny_storage: BunnyStorage) -> None:
         self.session_factory = session_factory
+        self.bunny_storage = bunny_storage
 
     async def get_users(self):
         async with self.session_factory() as session:
@@ -46,7 +48,16 @@ class UserService:
                 # Цикл для перевірки кожного поля та його значення при patch методі
                 for field, value in item.model_dump().items():
                     try:
-                        if value != getattr(user, field) or value is None:
+                        if field == 'avatar':
+                            if value is not None:
+                                try:
+                                    if user.avatar is not None:
+                                        await self.bunny_storage.delete_photo(user.avatar)
+                                    url_avatar = await self.bunny_storage.upload_image_to_bunny(item.avatar)
+                                    setattr(user, field, url_avatar)
+                                except:
+                                    raise BadRequestException(detail='Уведіть в поле avatar фото в base64 форматі')
+                        elif value != getattr(user, field) or value is None:
                             if value is not None:
                                 setattr(user, field, value)
                         else:
