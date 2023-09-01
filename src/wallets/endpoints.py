@@ -1,11 +1,11 @@
 from typing import List
 
+import socketio
 from propan import RabbitBroker
 from socketio import AsyncAioPikaManager
 from starlette.requests import Request
 
 from config_fastapi import settings
-from config_fastapi.fastapi_manager import fastapi_mgr
 from src.authentication.permissions import Permission
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
@@ -34,6 +34,7 @@ async def get_wallets_current_user(request: Request,
     user = await permission.get_current_user(request)
     if user:
         return await wallet_service.get_wallets_user(user.id)
+
 
 @wallet_router.post('/wallet/etherscan/', status_code=status.HTTP_200_OK)
 @inject
@@ -106,10 +107,3 @@ async def get_transaction_by_hash(txn_hash: str,
             return transaction
         raise HTTPException(detail='Ви ввели невірний хеш', status_code=status.HTTP_400_BAD_REQUEST)
 
-
-@wallet_router.get('/testing/', status_code=status.HTTP_200_OK)
-async def check_asyncpika(message: str):
-    async with RabbitBroker(settings.RABBITMQ_URI) as broker:
-        await broker.publish('get_balance', queue='socketio')
-
-    await fastapi_mgr.emit('get_balance', f'{message}')

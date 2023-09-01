@@ -27,6 +27,7 @@ async def test_db_engine():
         await conn.run_sync(Base.metadata.drop_all)
 
 
+# Стоврення фастапі з контейнером
 def create_test_app() -> FastAPI:
     container = Container()
 
@@ -41,7 +42,7 @@ test_app = create_test_app()
 
 
 
-# Створення та видалення таблиць при тестах
+т
 @pytest.fixture
 async def client():
     async with AsyncClient(app=test_app, base_url="http://testserver") as client:

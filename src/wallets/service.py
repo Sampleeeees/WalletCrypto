@@ -7,11 +7,16 @@ from eth_keys import keys
 from eth_utils import decode_hex
 from eth_account import Account
 from fastapi import HTTPException
+from propan import RabbitBroker
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
+from decimal import Decimal
+
+from config.database import LastSuccessBlock
+from config_fastapi import settings
 from . import schemas
 from .models import Wallet, Transaction, TransactionStatus, Asset
 
@@ -45,12 +50,18 @@ class WalletService:
             result = await db.execute(select(Wallet))
             return result.scalars().all()
 
-    # Отримання тільки тих адресів які були задіяні
-    async def get_wallets_from_transaction(self, from_send: set, to_send: set):
+    # отримання гаманця по адресі
+    async def get_wallet_by_address(self, address: str):
         async with self.session_factory() as db:
-            result_from = await db.execute(select(Wallet).where(Wallet.address.in_(from_send)))
-            result_to = await db.execute(select(Wallet).where(Wallet.address.in_(to_send)))
-            return [wallet_from.address for wallet_from in result_from.scalars().all()], [wallet_to.address for wallet_to in result_to.scalars().all()]
+            result = await db.execute(select(Wallet).where(Wallet.address == address))
+            if result:
+                return result.scalar()
+
+    async def get_wallets_from_transaction_new(self, addresses: set):
+        async with self.session_factory() as db:
+            results = await db.execute(select(Wallet).where(Wallet.address.in_(addresses)))
+            return [wallet.address for wallet in results.scalars().all()]
+
 
     # async def get_pending_transactions(self) -> List[Transaction]:
     #     async with self.session_factory() as db:
@@ -58,10 +69,15 @@ class WalletService:
     #         return result.scalars().all()
 
     # Отримання гаманців для авторизованого користувача
-    async def get_wallets_user(self, user_id: int):
+    async def get_wallets_user(self, user_id: int, wallet_id: int = None):
         async with self.session_factory() as db:
-            result = await db.execute(select(Wallet).where(Wallet.user_id == user_id))
-            return result.scalars().all()
+            if wallet_id:
+                result = await db.execute(select(Wallet).where(Wallet.user_id == user_id, Wallet.id == wallet_id))
+                return result.scalar_one_or_none()
+            else:
+                result = await db.execute(select(Wallet).where(Wallet.user_id == user_id))
+                return result.scalars().all()
+
 
     # Перевірка чи є така транзакція в базі даних
     async def get_transaction_in_db(self, txn_hash: str) -> Union[Transaction, bool]:
@@ -129,20 +145,22 @@ class WalletService:
             balance = provide.eth.get_balance(item.address)
             result = await db.execute(select(Wallet).where(Wallet.address == item.address))
             wallet = result.scalars().first()
-            if wallet.asset_id is not None:
-                asset = await db.get(Asset, wallet.asset_id)
-                balance = balance / (int("1" + ("0" * asset.decimal_places)))
-            if wallet is None:
-                raise HTTPException(detail='Така адреса не зареєстрована на сервері',
-                                    status_code=status.HTTP_400_BAD_REQUEST)
-            if wallet.balance == balance:
-                return wallet
-            else:
-                wallet.balance = balance
-                db.add(wallet)
-                await db.commit()
-                await db.refresh(wallet)
-                return wallet
+            if wallet:
+                if wallet.asset_id is not None:
+                    asset = await db.get(Asset, wallet.asset_id)
+                    balance = balance / (int("1" + ("0" * asset.decimal_places)))
+
+                if wallet is None:
+                    raise HTTPException(detail='Така адреса не зареєстрована на сервері',
+                                        status_code=status.HTTP_400_BAD_REQUEST)
+                if wallet.balance == balance:
+                    return wallet
+                else:
+                    wallet.balance = balance
+                    db.add(wallet)
+                    await db.commit()
+                    await db.refresh(wallet)
+                    return wallet
 
     # Відправка транзакції
     async def send_transaction(self, item: schemas.TransactionCreate):
@@ -176,6 +194,7 @@ class WalletService:
             txn_hash = provider.eth.send_raw_transaction(signed_tx.rawTransaction)
             async with self.session_factory() as db:
                 transaction = Transaction(from_send=item.from_send, to_send=item.to_send, value=item.value, hash=txn_hash.hex(), date_send=datetime.now(),status=TransactionStatus.pending)
+
                 db.add(transaction)
                 await db.commit()
                 await db.refresh(transaction)
@@ -221,15 +240,23 @@ class WalletService:
         txn_receipt = provider.eth.get_transaction_receipt(txn_hash)
         txn_status = txn_receipt['status']
         txn_gasUsed = txn_receipt['gasUsed']
-        transaction = await self.get_transaction_in_db(txn_hash.hex())
         async with self.session_factory() as db:
-            asset = await db.get(Asset, 1)
-            transaction.txn_fee = (txn_gasPrice * txn_gasUsed) / (int("1" + ("0" * asset.decimal_places)))
-            transaction.date_send = datetime.now()
-            transaction.status = TransactionStatus.success if txn_status == 1 else TransactionStatus.failed if txn_status == 0 else TransactionStatus.pending
-            await db.commit()
-            await db.refresh(transaction)
-            return 'Success update'
+            result = await db.execute(select(Transaction).where(Transaction.hash == txn_hash.hex()))
+            transaction = result.scalar()
+            if transaction:
+                asset = await db.get(Asset, 1)
+                transaction.txn_fee = (txn_gasPrice * txn_gasUsed) / (int("1" + ("0" * asset.decimal_places)))
+                transaction.date_send = datetime.now()
+                transaction.status = (TransactionStatus.success if txn_status == 1 else TransactionStatus.failed if txn_status == 0 else TransactionStatus.pending)
+                async with RabbitBroker(settings.RABBITMQ_URI) as broker:
+                    await broker.publish(message={'transaction_id': transaction.id,
+                                                  'type': 'update_order',
+                                                  'status': True if transaction.status.success else False},
+                                         queue='delivery/delivery_queue')
+                db.add(transaction)
+                await db.commit()
+                await db.refresh(transaction)
+                return 'Success update'
 
     # Створення або оновлення транзакції
     async def create_or_update_transaction(self, txn_hash: HexBytes) -> str:
@@ -241,6 +268,21 @@ class WalletService:
             created_txn = await self.create_transaction(txn_hash)
             return created_txn
 
+    # оновлення балансу гаманця коли отримав транзакцію з парсеру
+    async def balance_operation(self, address: str, value: Union[int, float], action: str) -> None:
+        wallet = await self.get_wallet_by_address(address=address)
+        if wallet:
+            async with self.session_factory() as db:
+                asset = await db.get(Asset, 1)
+                if wallet.balance is None:
+                    wallet.balance = 0
+                if action == 'from':
+                    wallet.balance -= (Decimal(value) / (int("1" + ("0" * asset.decimal_places))))
+                elif action == 'to':
+                    wallet.balance += (Decimal(value) / (int("1" + ("0" * asset.decimal_places))))
+                db.add(wallet)
+                await db.commit()
+                await db.refresh(wallet)
 
 
 

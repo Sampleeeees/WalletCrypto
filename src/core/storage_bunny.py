@@ -47,9 +47,9 @@ class BunnyStorage:
 
         return url
 
+    # Видалення фото коли користувач його хоче змінити
     async def delete_photo(self, url_photo) -> None:
-        filename = url_photo.split('/')[-1]
-        print(filename)
-        storage = await self.get_storage()
-        storage.DeleteFile(filename)
+        filename = url_photo.split('/')[-1] # Отримання назви з url
+        storage = await self.get_storage() # Ініціалізація стораджу
+        storage.DeleteFile(filename) # Видалення фото з bunny.net
 

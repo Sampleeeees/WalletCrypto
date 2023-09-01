@@ -1,18 +1,23 @@
+from typing import Optional
+
 import jwt
-from fastapi import HTTPException, Depends, Request
+from jwt import PyJWTError
+
+from fastapi import HTTPException, Request
 from fastapi.security import OAuth2
 from fastapi.security.utils import get_authorization_scheme_param
+
 from starlette import status
-from jwt import PyJWTError
 from starlette.status import HTTP_403_FORBIDDEN
-from src.users.models import User
+
 from .exceptions import BadRequestException
+
 from src.users.service import UserService
 
 
 class JWTBearerCookie(OAuth2):
     """Клас для первірки access_token в cookies"""
-    def __call__(self, request: Request):
+    def __call__(self, request: Request) -> Optional[str]:
         print('Hello')
         cookie_authorization = request.cookies.get('Authorization')
         token_type, access_token = get_authorization_scheme_param(cookie_authorization)
@@ -59,7 +64,7 @@ class Permission:
             raise HTTPException(status_code=404, detail='User not found')
         return user
 
-    async def is_admin(self, request: Request):
+    async def is_admin(self, request: Request) -> Optional[bool]:
         user = await self.get_current_user(request)
         if user.is_superuser:
             return True

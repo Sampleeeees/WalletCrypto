@@ -1,5 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
+
+from sqlalchemy import Column, Integer
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncAttrs, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 
@@ -8,6 +10,13 @@ logger = logging.getLogger(__name__)
 class Base(AsyncAttrs, DeclarativeBase):
     pass
 
+class LastSuccessBlock(Base):
+    """Save block number in db"""
+
+    __tablename__ = 'blockNumber'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    block_number = Column(Integer, default=0)
 
 class Database:
     """Клас для підключення до бази даних та отримання сесії"""

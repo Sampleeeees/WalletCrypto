@@ -1,18 +1,20 @@
 import asyncio
-import functools
-from typing import List
 
 from fastapi import APIRouter, Depends, Response
+
 from starlette import status
 from starlette.requests import Request
 from starlette.responses import JSONResponse
-from .send_email import send_new_account_email
-from src.users.schemas import UserRegistration, LoginUser, UserProfile
+
 from dependency_injector.wiring import inject, Provide
 
+from src.users.schemas import UserRegistration, LoginUser
+from src.core.containers import Container
+from src.users.service import UserService
+
+from .send_email import send_new_account_email
 from .permissions import Permission
-from ..core.containers import Container
-from ..users.service import UserService
+
 
 auth_router = APIRouter()
 
@@ -40,7 +42,7 @@ async def registration(item: UserRegistration, user_service: UserService = Depen
 
 @auth_router.post("/login/", status_code=status.HTTP_200_OK)
 @inject
-async def login_user(response: Response, item: LoginUser, user_service: UserService = Depends(Provide[Container.user_service])):
+async def login_user(response: Response, item: LoginUser, user_service: UserService = Depends(Provide[Container.user_service])) -> dict:
     user = await user_service.authorization(item)
 
     # Записуємо токен в Кукі
@@ -56,8 +58,9 @@ async def login_user(response: Response, item: LoginUser, user_service: UserServ
 
 @auth_router.post('/logout/', status_code=status.HTTP_200_OK)
 @inject
-async def logout(response: Response, request: Request, permission: Permission = Depends(Provide[Container.permission])):
-    print(permission)
+async def logout(response: Response,
+                 request: Request,
+                 permission: Permission = Depends(Provide[Container.permission])) -> dict:
     if await permission.get_current_user(request):
         response.delete_cookie(key="Authorization")
         return {"detail": 'Ви успішно вийшли зі свого акаунту'}

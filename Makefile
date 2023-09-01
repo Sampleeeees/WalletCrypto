@@ -2,9 +2,9 @@ flower:
 	fuser -k 5555/tcp
 	celery -A config_celery.celery_worker.app flower
 celery:
-	celery -A config_celery.celery_worker worker --loglevel=info
+	celery -A config_celery.celery_app worker --loglevel=info
 propan:
-	propan run propan_app:app
+	propan run config_propan.propan_depends:app --reload
 socketio:
 	fuser -k 8001/tcp
 	uvicorn config_socketio.socket_application:socketio_app --reload --host 127.0.0.1 --port 8001
@@ -16,4 +16,6 @@ reset_rabbitmq:
 	sudo rabbitmqctl start_app
 fastapi:
 	uvicorn config_fastapi.main:app --reload
+
+
 

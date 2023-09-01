@@ -36,6 +36,8 @@ redis = "^4.6.0"
 flower = "^2.0.1"
 asgiref = "^3.7.2"
 bunnycdnpython = "^0.0.8"
+requests = "^2.31.0"
+typing-extensions = "^4.7.1"
 
 [tool.pytest.ini_options]
 

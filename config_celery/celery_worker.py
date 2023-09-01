@@ -13,4 +13,13 @@ app.conf.update(
     CELERY_ACCEPT_CONTENT=['json'],
     CELERY_TIMEZONE='Europe/Oslo',
     CELERY_ENABLE_UTC=True,
-    CELERY_IGNORE_RESULT=True)
+    CELERY_IGNORE_RESULT=True,
+    CELERYBEAT_SCHEDULE={
+        'random_delivery': {
+            'task': 'config_celery.tasks.random_delivery',
+            'schedule': 5.0,
+        },
+    }
+)
+
+

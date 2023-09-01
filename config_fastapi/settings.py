@@ -32,18 +32,20 @@ DATABASE_TEST_URI = f'postgresql+asyncpg://{env("POSTGRES_USER")}:' \
                     f'{env("POSTGRES_HOST")}:5432/' \
                     f'{env("POSTGRES_DB_TEST")}'
 
-APPS_SERVICE = [
+APPS_SERVICE =[
+    'config',
     'config_celery.tasks',
-    'config_socketio.server',
-    "src.chats",
-    "src.delivery",
-    "src.ibay",
-    "src.users",
-    "src.wallets",
+    'config_propan',
+    'config_socketio',
     'src.authentication',
+    'src.chats',
+    'src.delivery',
+    'src.ibay',
     'src.parser',
-    'src.core',
+    'src.users',
+    'src.wallets',
 ]
+
 
 
 EMAILS_FROM_NAME = "CryptoWallet"
@@ -64,7 +66,6 @@ RABBITMQ_URI=f'amqp://{env("RABBITMQ_USER")}:' \
 
 INFURA_URI = env("INFURA_URI")
 INFURA_URI_HTTP = env("INFURA_URI_HTTP")
-INFURA_SEPOLIA_URI = env("INFURA_SEPOLIA_URI")
 
 
 ORIGINS = [

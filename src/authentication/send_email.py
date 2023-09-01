@@ -1,8 +1,7 @@
 import logging
-from pathlib import Path
-
-
 import emails
+
+from pathlib import Path
 from emails.template import JinjaTemplate
 from config_fastapi import settings
 

@@ -13,7 +13,6 @@ async def connect():
 @sio_client.event
 async def my_message(data):
     print('message received with ', data)
-    await sio_client.emit('my response', {'response': 'my response'})
 
 @sio_client.on('event')
 async def handler_envent(data):
@@ -27,8 +26,9 @@ async def disconnect():
 
 async def main():
     await sio_client.connect('http://127.0.0.1:8001')
+    await sio_client.emit('parsing', 'test')
+    await sio_client.wait()
     # await sio_client.emit('event', 'Hello')
-    await sio_client.emit('test', 'Woah')
     # await sio_client.emit('testing', 'Woah')
 
     #await sio_client.wait()

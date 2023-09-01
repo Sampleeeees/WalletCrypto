@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Any
 from pydantic import BaseModel, field_validator
 
 
@@ -6,7 +6,7 @@ class WalletBase(BaseModel):
     """Базова схема гаманця"""
     id: int
     address: str
-    balance: Union[int, float]
+    balance: Union[int, float, Any]
 
     class Config:
         from_attributes = True

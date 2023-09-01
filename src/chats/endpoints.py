@@ -1,9 +1,9 @@
 import datetime
-from typing import List
+from typing import List, Type, Union, Any
 
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, Row, RowMapping, Sequence
 from starlette import status
 from starlette.requests import Request
 
@@ -20,6 +20,7 @@ chat_router = APIRouter()
 async def get_message_current_user(request: Request,
                                    permission: Permission = Depends(Provide[Container.permission]),
                                    database: Database = Depends(Provide[Container.database])):
+    """Отримання всіх повідомленнь авторизованого користувача"""
     user = await permission.get_current_user(request)
     if user:
         async with database.get_db_session() as db:
@@ -34,7 +35,8 @@ async def get_message_current_user(request: Request,
 async def send_message(request: Request,
                        msg_id: int,
                        permission: Permission = Depends(Provide[Container.permission]),
-                       database: Database = Depends(Provide[Container.database])):
+                       database: Database = Depends(Provide[Container.database])) -> Type[Message]:
+    """Отримання повідомлення по id"""
     admin = await permission.is_admin(request)
     if admin:
         async with database.get_db_session() as db:
@@ -50,7 +52,8 @@ async def send_message(request: Request,
 async def send_message(request: Request,
                        item: schemas.MessageSend,
                        permission: Permission = Depends(Provide[Container.permission]),
-                       database: Database = Depends(Provide[Container.database])):
+                       database: Database = Depends(Provide[Container.database])) -> dict:
+    """Відправлення повідомлення авторизованого користувача"""
     user = await permission.get_current_user(request)
     if user:
         async with database.get_db_session() as db:
@@ -72,7 +75,8 @@ async def send_message(request: Request,
 async def delete_message(request: Request,
                        msg_id: int,
                        permission: Permission = Depends(Provide[Container.permission]),
-                       database: Database = Depends(Provide[Container.database])):
+                       database: Database = Depends(Provide[Container.database])) -> dict:
+    """Видалення повідомлення"""
     user = await permission.get_current_user(request)
     if user:
         async with database.get_db_session() as db:

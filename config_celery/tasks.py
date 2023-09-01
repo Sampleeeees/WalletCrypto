@@ -2,18 +2,29 @@ import asyncio
 from dependency_injector.wiring import Provide, inject
 import logging
 from src.core.containers import Container
-from src.wallets.web3_service import Web3Service
+from src.delivery.service import DeliveryService
+from src.parser.service import ParserService
 from .celery_worker import app
 
 
 logger = logging.getLogger(__name__)
 
+# @app.on_after_configure.connect
+# def setup_periodic_tasks(sender, **kwargs):
+#     sender.add_periodic_task(5.0, random_delivery.s())
 
-@app.task
+@app.task(max_retries=3, retry_backoff=True)
 @inject
-def parse_block(block_number, web3_service: Web3Service = Provide[Container.web3_service]):
+def parse_block(block_number, parser_service: ParserService = Provide[Container.parser_service]):
     loop = asyncio.get_event_loop()
-    return loop.run_until_complete(web3_service.parsing_block(block_number))
+    return loop.run_until_complete(parser_service.parsing_block(block_number))
+
+@app.task(ignore_result=True)
+@inject
+def random_delivery(delivery_service: DeliveryService = Provide[Container.delivery_service]):
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(delivery_service.random_delivery())
+
 
 
 
