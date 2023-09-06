@@ -1,11 +1,6 @@
 from typing import List
-
-import socketio
-from propan import RabbitBroker
-from socketio import AsyncAioPikaManager
 from starlette.requests import Request
 
-from config_fastapi import settings
 from src.authentication.permissions import Permission
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
@@ -14,6 +9,7 @@ from dependency_injector.wiring import Provide, inject
 from src.core.containers import Container
 from .models import Wallet
 from .service import WalletService
+
 
 wallet_router = APIRouter()
 
@@ -50,7 +46,7 @@ async def get_address_in_etherscan(address: str,
 
 @wallet_router.post('/wallet/', status_code=status.HTTP_200_OK)
 @inject
-async def create_wallet(request:Request,
+async def create_wallet(request: Request,
                         permission: Permission = Depends(Provide[Container.permission]),
                         wallet_service: WalletService = Depends(Provide[Container.wallet_service])):
     """Стоврення гаманця для авторизованого користувача"""
