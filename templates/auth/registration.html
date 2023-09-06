@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Login V4</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->
+	<link rel="icon" type="image/png" href="{{ url_for('static', path='/dist/images/icons/favicon.ico') }}"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{{  url_for('static', path='/dist/fonts/font-awesome-4.7.0/css/font-awesome.min.css')}}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{{  url_for('static', path='fonts/iconic/css/material-design-iconic-font.min.css')}}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{{  url_for('static', path='/dist/css/util_login.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{  url_for('static', path='/dist/css/login.css')}}">
+<!--===============================================================================================-->
+</head>
+<body>
+
+	<div class="limiter">
+		<div class="container-login100" style="background-image: url({{ url_for('static', path='/dist/images/bg-01.jpg')}});">
+			<div class="wrap-login100 p-l-55 p-r-55 p-t-65 p-b-54">
+                <div style="font-size: 22px; color: green"  id="success-registration" class="text-center">
+
+
+                </div>
+				<form id="registration-form"  class="login100-form validate-form">
+					<span class="login100-form-title p-b-49">
+						Sign up
+					</span>
+
+                    <p id="error-label" class="text-danger text-center"></p>
+
+                    <div class="wrap-input100 validate-input m-b-23" data-validate = "Email is required">
+						<span class="label-input100">Email</span>
+                        <p id="error-input-label" class="m-l-10 text-danger"></p>
+						<input class="input100" type="text" id="email" name="email" onkeydown="validateEmail(this)" placeholder="Type your email">
+						<span class="focus-input100" data-symbol="&#xf206;"></span>
+					</div>
+
+					<div class="wrap-input100 validate-input m-b-23" data-validate = "Username is required">
+						<span class="label-input100">Username</span>
+                        <p id="error-username-label" class="m-l-10 text-danger"></p>
+						<input class="input100" type="text" id="username" name="username" onkeydown="validateUsername(event)" placeholder="Type your username. Example: John Doe">
+						<span class="focus-input100" data-symbol="&#xf206;"></span>
+					</div>
+
+					<div class="wrap-input100 validate-input m-b-23" data-validate="Password is required">
+						<span class="label-input100">Password</span>
+						<input class="input100" type="password" id="pass" name="pass" placeholder="Type your password">
+						<span class="focus-input100" data-symbol="&#xf190;"></span>
+					</div>
+
+                    <div class="wrap-input100 validate-input m-b-23" data-validate="Password is required">
+						<span class="label-input100">Repeat Password</span>
+						<input class="input100" type="password" id="repeat_pass" name="repeat_pass" placeholder="Repeat your password">
+						<span class="focus-input100" data-symbol="&#xf190;"></span>
+					</div>
+
+					<div class="container-login100-form-btn p-t-10">
+						<div class="wrap-login100-form-btn">
+							<div class="login100-form-bgbtn"></div>
+							<button class="login100-form-btn" id="button-registration" type="button">
+								Sign up
+							</button>
+						</div>
+					</div>
+
+					<div class="flex-col-c p-t-15">
+                        <p>You already have an account?</p>
+						<a href="/login/" class="txt2">
+							Login
+						</a>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+
+	<div id="dropDownSelect1"></div>
+     <!-- JQUERY -->
+    <!--===============================================================================================-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.js" integrity="sha512-+k1pnlgt4F1H8L7t3z95o3/KO+o78INEcXTbnoJQ/F2VqDVhWoaiVml/OEHv9HsVgxUaVW+IbiZPUJQfF/YxZw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!--===============================================================================================-->
+	<script src="{{ url_for('static', path='/dist/js/auth.js') }}"></script>
+
+</body>
+</html>
