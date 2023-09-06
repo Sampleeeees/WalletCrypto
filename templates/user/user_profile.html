@@ -1,0 +1,125 @@
+{% extends "base/basic.html" %}
+
+{% block title %}
+    User Profile
+{% endblock %}
+
+{% block content %}
+    <h2> Profile </h2>
+    <!----------------------------Profile Block---------------------------------------------------------->
+    <div class="border border-2 border-gray rounded">
+        <!-----------------------------Image, name, buttons---------------------------------------------->
+        <div class="d-flex" id="block_profile">
+            <img class="m-4 rounded-1" width="85px" height="85px" id="user_avatar" src="{{ url_for('static', path='/assets/img/avatars/basic.jpg') }}" alt="">
+            <div>
+                <h3 id="profile_user_username" class="mt-4 ms-2">Name Name</h3>
+                <label for="upload_image" class="btn btn-primary me-1">Update</label>
+                <input type="file" id="upload_image" class="d-none" onchange="previewImage(this)">
+                <button id="btn_delete_profile" onclick="delete_image()" class="btn btn-danger ms-1">Delete</button>
+            </div>
+        </div>
+        <!-----------------------------End Image, name, buttons------------------------------------------>
+        <!-----------------------------Profile Form Fields----------------------------------------------->
+        <div id="block_form_profile">
+            <div class="d-flex">
+                <label class="my-auto ms-2 fs-4 col" for="profile_username">Username</label>
+                <input id="profile_username" class="form-control m-2" type="text">
+                <label class="my-auto ms-2 fs-4 col" for="profile_email">Email</label>
+                <input id="profile_email" class="form-control m-2" disabled title="Email не можна змінити" type="text">
+            </div>
+            <div class="d-flex">
+                <label class="my-auto ms-2 fs-4 text-nowrap" for="profile_password">New pass</label>
+                <input id="profile_password" class="form-control m-2" type="text">
+                <label class="my-auto ms-2 fs-4 col" for="profile_password_repeat">Repeat</label>
+                <input id="profile_password_repeat" class="form-control m-2" type="text">
+            </div>
+            <div>
+                <button onclick="update_user_profile()" class="btn btn-success m-4 ps-5 pe-5" >Save</button>
+            </div>
+        </div>
+        <!-----------------------------End Profile form fields------------------------------------------->
+    </div>
+    <!-----------------------------End Profile Block----------------------------------------------------->
+
+    <h2 class="mt-4">Statistics</h2>
+    <!--------------------------------Statistics block--------------------------------------------------->
+    <div class="border border-2 border-gray rounded">
+        <div>
+            <div class="d-flex">
+                <p class="fs-5 m-2">Messages in chat:</p>
+                <p id="profile_count_messages" class="fs-5 m-2">0</p>
+            </div>
+            <div class="d-flex">
+                <p class="fs-5 m-2">Wallets:</p>
+                <p id="profile_count_wallets" class="fs-5 m-2">0</p>
+            </div>
+        </div>
+    </div>
+    <!---------------------------------End statistics block---------------------------------------------->
+    <h2 class="mt-4">Wallet Management</h2>
+    <!---------------------------------Wallet Management------------------------------------------------->
+    <div class="border border-2 border-gray rounded">
+        <div class="row" id="block_wallets">
+            <!-------------------------- Wallets--------------------------------------------------------->
+
+            <!----------------------------------End wallets---------------------------------------------->
+        </div>
+        <div class="row">
+            <div class="d-flex">
+                <button type="button" data-bs-toggle="modal" data-bs-target="#importWalletModal" class="btn btn-primary m-4 ps-5 pe-5">Import ETH Wallet</button>
+                <button onclick="create_wallet()" class="btn btn-primary m-4 ps-5 pe-5">Create ETH Wallet</button>
+            </div>
+        </div>
+    </div>
+    <!---------------------------------End wallet management--------------------------------------------->
+
+    <!-- Import Wallet Modal -->
+              <div class="modal fade" id="importWalletModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered1 modal-simple modal-add-new-cc">
+                  <div class="modal-content p-3 p-md-5">
+                    <div class="modal-body">
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      <div class="text-center mb-4">
+                        <h3 class="mb-2">Import Wallet</h3>
+                      </div>
+                      <form id="addNewCCForm" class="row g-3" onsubmit="return false">
+                        <div class="col-12">
+                            <div class="input-group input-group-merge">
+                            <input
+                              id="modalImportWallet"
+                              name="modalImportWallet"
+                              class="form-control credit-card-mask"
+                              type="text"
+                              placeholder="Enter private key"
+                              aria-describedby="modalAddCard2"
+                            />
+                            <span class="input-group-text cursor-pointer p-1" id="modalAddCard2"
+                              ><span class="card-type"></span
+                            ></span>
+                          </div>
+                        </div>
+                        <div class="col-12 text-center">
+                          <button type="submit" onclick="import_wallet()" class="btn btn-primary me-sm-3 me-1">Submit</button>
+                          <button
+                            type="reset"
+                            class="btn btn-label-secondary btn-reset"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!--/ Add New Credit Card Modal -->
+
+{% endblock %}
+
+{% block script %}
+    <script>let basic_image ="{{ url_for('static', path='/assets/img/avatars/basic.jpg') }}"</script>
+    <script src="{{ url_for('static', path='/dist/js/user_profile.js') }}"></script>
+{% endblock %}

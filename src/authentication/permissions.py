@@ -64,6 +64,12 @@ class Permission:
             raise HTTPException(status_code=404, detail='User not found')
         return user
 
+    async def get_token_bearer(self, request: Request):
+        cookie_authorization = request.cookies.get('Authorization')
+        if cookie_authorization is None:
+            return False
+        return True
+
     async def is_admin(self, request: Request) -> Optional[bool]:
         user = await self.get_current_user(request)
         if user.is_superuser:

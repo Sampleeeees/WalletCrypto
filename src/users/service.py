@@ -50,13 +50,21 @@ class UserService:
                     try:
                         if field == 'avatar':
                             if value is not None:
-                                try:
-                                    if user.avatar is not None:
-                                        await self.bunny_storage.delete_photo(user.avatar)
-                                    url_avatar = await self.bunny_storage.upload_image_to_bunny(item.avatar)
-                                    setattr(user, field, url_avatar)
-                                except:
-                                    raise BadRequestException(detail='Уведіть в поле avatar фото в base64 форматі')
+                                if value != 'delete':
+                                    try:
+                                        if user.avatar is not None:
+                                            await self.bunny_storage.delete_photo(user.avatar)
+                                        url_avatar = await self.bunny_storage.upload_image_to_bunny(item.avatar)
+                                        setattr(user, field, url_avatar)
+                                    except:
+                                        raise BadRequestException(detail='Уведіть в поле avatar фото в base64 форматі')
+                                else:
+                                    await self.bunny_storage.delete_photo(user.avatar)
+                                    setattr(user, field, None)
+                        if field == 'password':
+                            if value is not None:
+                                hashed_password = get_password_hash(item.password)
+                                setattr(user, field, hashed_password)
                         elif value != getattr(user, field) or value is None:
                             if value is not None:
                                 setattr(user, field, value)
