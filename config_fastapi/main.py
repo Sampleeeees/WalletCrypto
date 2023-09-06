@@ -3,6 +3,7 @@ from dependency_injector.wiring import Provide
 from fastapi import FastAPI, Depends
 from propan import RabbitBroker
 from starlette.middleware.cors import CORSMiddleware
+from starlette.staticfiles import StaticFiles
 
 from config_fastapi import settings
 import src
@@ -30,7 +31,6 @@ def create_app() -> FastAPI:
     # broker.container = container
 
     app.include_router(src.core.routers.routers)
-    app.socketio_app = socketio_app
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.ORIGINS,
@@ -38,7 +38,8 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"]
     )
-    app.mount("/socketio/", app.socketio_app)
+    app.mount('/static/', StaticFiles(directory='static'), name='static')
+    app.mount("/ws/", socketio_app)
 
     # @app.on_event('startup')
     # async def startup_app():

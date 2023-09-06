@@ -95,7 +95,6 @@ class WalletService:
             raise HTTPException(detail='Ви ввели невірний гаманець', status_code=status.HTTP_400_BAD_REQUEST)
         return {'url': f"https://etherscan.io/address/{address}"}
 
-
     # Створення гаманця
     async def create_wallet(self, user_id: int) -> Optional[Wallet]:
         async with self.session_factory() as db:

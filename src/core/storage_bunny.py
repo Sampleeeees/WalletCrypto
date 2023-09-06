@@ -4,6 +4,7 @@ import random
 import string
 
 from BunnyCDN.Storage import Storage
+from BunnyCDN.CDN import CDN
 
 class BunnyStorage:
     """ Клас за допомогою якого буде відправлятися фото на storage bunny"""
@@ -11,10 +12,14 @@ class BunnyStorage:
         self.api_key = api_key
         self.storage_name = storage_name
         self.storage_region = storage_region
+        self.cdn_path = ''
 
     # Отримання storage через api_key
     async def get_storage(self) -> Storage:
         return Storage(api_key=self.api_key, storage_zone=self.storage_name)
+
+    async def get_cdn(self) -> CDN:
+        return CDN(api_key=self.api_key)
 
     # створення рандомної назви картинки
     async def generate_random_filename(self, length: int = 10) -> str:
@@ -50,6 +55,7 @@ class BunnyStorage:
     # Видалення фото коли користувач його хоче змінити
     async def delete_photo(self, url_photo) -> None:
         filename = url_photo.split('/')[-1] # Отримання назви з url
+
         storage = await self.get_storage() # Ініціалізація стораджу
         storage.DeleteFile(filename) # Видалення фото з bunny.net
 

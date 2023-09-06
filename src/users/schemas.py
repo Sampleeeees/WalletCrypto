@@ -86,23 +86,24 @@ class UpdateUserProfile(BaseModel):
 
     @field_validator('password')
     def validate_password(cls, value):
-        # Перевірка на довжину від 8 до 20 символів
-        if not 8 <= len(value) <= 20:
-            raise BadRequestException("Пароль повинен містити від 8 до 20 символів")
+        if value is not None:
+            # Перевірка на довжину від 8 до 20 символів
+            if not 8 <= len(value) <= 20:
+                raise BadRequestException("Пароль повинен містити від 8 до 20 символів")
 
-        # Перевірка на наявність мінімум 1 цифри
-        if not any(char.isdigit() for char in value):
-            raise BadRequestException("Пароль повинен містити принаймні одну цифру")
+            # Перевірка на наявність мінімум 1 цифри
+            if not any(char.isdigit() for char in value):
+                raise BadRequestException("Пароль повинен містити принаймні одну цифру")
 
-        # Перевірка на наявність мінімум 1 літери в нижньому регістрі
-        if not any(char.islower() for char in value):
-            raise BadRequestException("Пароль повинен містити принаймні одну літеру в нижньому регістрі")
+            # Перевірка на наявність мінімум 1 літери в нижньому регістрі
+            if not any(char.islower() for char in value):
+                raise BadRequestException("Пароль повинен містити принаймні одну літеру в нижньому регістрі")
 
-        # Перевірка на наявність мінімум 1 літери в верхньому регістрі
-        if not any(char.isupper() for char in value):
-            raise BadRequestException("Пароль повинен містити принаймні одну літеру в верхньому регістрі")
+            # Перевірка на наявність мінімум 1 літери в верхньому регістрі
+            if not any(char.isupper() for char in value):
+                raise BadRequestException("Пароль повинен містити принаймні одну літеру в верхньому регістрі")
 
-        return value
+            return value
 
     @field_validator('repeat')
     def validate_repeat_password(cls, value, values):
