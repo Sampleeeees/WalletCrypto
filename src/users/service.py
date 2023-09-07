@@ -48,26 +48,26 @@ class UserService:
                 # Цикл для перевірки кожного поля та його значення при patch методі
                 for field, value in item.model_dump().items():
                     try:
-                        if field == 'avatar':
-                            if value is not None:
-                                if value != 'delete':
+                        if field == 'avatar': # Якщо редагуємо поле аватар
+                            if value is not None: # Перевіряємо чи не пусте поле value
+                                if value != 'delete': # Якщо значення value != delete
                                     try:
-                                        if user.avatar is not None:
+                                        if user.avatar is not None: # Якщо до цього у полі avatar була url картинки то видаляємо
                                             await self.bunny_storage.delete_photo(user.avatar)
-                                        url_avatar = await self.bunny_storage.upload_image_to_bunny(item.avatar)
-                                        setattr(user, field, url_avatar)
-                                    except:
+                                        url_avatar = await self.bunny_storage.upload_image_to_bunny(item.avatar) # Завантажуємо нове фото в storage
+                                        setattr(user, field, url_avatar) # Записуємо значення в бд
+                                    except: # Якщо фото прийшло не в base64 о цього моменту то видаємо помилку
                                         raise BadRequestException(detail='Уведіть в поле avatar фото в base64 форматі')
-                                else:
+                                else: # Якщо у полі avatar отримуємо delete то видаляємо картинку
                                     await self.bunny_storage.delete_photo(user.avatar)
-                                    setattr(user, field, None)
-                        if field == 'password':
-                            if value is not None:
-                                hashed_password = get_password_hash(item.password)
-                                setattr(user, field, hashed_password)
-                        elif value != getattr(user, field) or value is None:
-                            if value is not None:
-                                setattr(user, field, value)
+                                    setattr(user, field, None) # Ставимо значення None в бд
+                        elif field == 'password': # Для поля паролю
+                            if value is not None: # Перевіряємо чи не пусте значення
+                                hashed_password = get_password_hash(item.password) # Хешуємо пароль в бд
+                                setattr(user, field, hashed_password) # Ставимо значення в бдшку
+                        elif value != getattr(user, field) or value is None: # Первірка чи є таке начення як в моделі юзера
+                            if value is not None: # Якщо значення не пусте
+                                setattr(user, field, value) # Записуємо нове значення
                         else:
                             raise BadRequestException(
                                 detail=f"Помилка в пол  і {field}, таке значення вже записано в моделі")
