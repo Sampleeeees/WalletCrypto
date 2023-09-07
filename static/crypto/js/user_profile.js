@@ -64,12 +64,9 @@ function load_user_profile(){
             profile_email.val(data.email)
             profile_username.val(data.username)
             profile_user_username.text(data.username)
-            user_basic_username.text(data.username)
             old_username = data.username
             if (data.avatar){
                 user_avatar.attr('src', data.avatar)
-                header_avatar.attr('src', data.avatar)
-                dropdown_image.attr('src', data.avatar)
                 old_image_url = data.avatar
             }
 

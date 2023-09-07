@@ -1,4 +1,8 @@
 const logout_user_user = window.location.origin + "/api/v1/logout/"
+const user_basic_profile_url = window.location.origin + "/api/v1/user/profile/"
+const header_basic_avatar = $("#header_avatar")
+const basic_dropdown_image = $('#dropdown_image')
+const user_basic_nickname = $('#user_basic_username')
 
 window.addEventListener('load', () => {
     const loader = document.querySelector('.loader');
@@ -9,6 +13,28 @@ window.addEventListener('load', () => {
         loader.remove()
     })
 })
+
+$(document).ready(function (){
+    load_basic_user_profile()
+})
+
+function load_basic_user_profile(){
+    $.ajax({
+        method: 'GET',
+        headers: {
+            "Content-Type": 'application/json'
+        },
+        url: user_basic_profile_url,
+        success: function (data){
+            console.log(data)
+            user_basic_nickname.text(data.username)
+            if(data.avatar){
+                basic_dropdown_image.attr('src', data.avatar)
+                header_basic_avatar.attr('src', data.avatar)
+            }
+        }
+    })
+}
 
 $(window).on('load', function (){
     toastr.options = {
