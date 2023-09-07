@@ -11,6 +11,7 @@ from src.wallets.endpoints import wallet_router
 from src.authentication.endpoints import auth_router
 from src.users.endpoints import user_router
 from src.chats.endpoints import chat_router
+from src.wallets.views import wallet_views_router
 
 routers = APIRouter()
 
@@ -26,3 +27,4 @@ routers.include_router(test_router, tags=['Socket'])
 routers.include_router(user_views_router)
 routers.include_router(auth_views_router)
 routers.include_router(chat_views_router)
+routers.include_router(wallet_views_router)
