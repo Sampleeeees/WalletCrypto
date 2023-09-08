@@ -8,7 +8,7 @@ from eth_utils import decode_hex
 from eth_account import Account
 from fastapi import HTTPException
 from propan import RabbitBroker
-from sqlalchemy import select
+from sqlalchemy import select, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from web3 import Web3
@@ -62,12 +62,6 @@ class WalletService:
             results = await db.execute(select(Wallet).where(Wallet.address.in_(addresses)))
             return [wallet.address for wallet in results.scalars().all()]
 
-
-    # async def get_pending_transactions(self) -> List[Transaction]:
-    #     async with self.session_factory() as db:
-    #         result = await db.execute(select(Transaction).where(Transaction.status == TransactionStatus.pending))
-    #         return result.scalars().all()
-
     # Отримання гаманців для авторизованого користувача
     async def get_wallets_user(self, user_id: int, wallet_id: int = None):
         async with self.session_factory() as db:
@@ -77,6 +71,11 @@ class WalletService:
             else:
                 result = await db.execute(select(Wallet).where(Wallet.user_id == user_id))
                 return result.scalars().all()
+
+    async def get_all_transaction_by_address(self, address: str):
+        async with self.session_factory() as db:
+            results = await db.execute(select(Transaction).where(or_(Transaction.from_send == address, Transaction.to_send == address)))
+            return results.scalars().all()
 
 
     # Перевірка чи є така транзакція в базі даних

@@ -65,6 +65,15 @@ async def import_wallet(item: schemas.WalletImport,
     if user:
         return await wallet_service.import_wallet(item.private_key, user.id)
 
+@wallet_router.get('/wallet/transactions/{address}', status_code=status.HTTP_200_OK)
+@inject
+async def get_all_transactions_by_address(address: str,
+                                          request: Request,
+                                          wallet_service: WalletService = Depends(Provide[Container.wallet_service]),
+                                          permission: Permission = Depends(Provide[Container.permission])):
+    user = await permission.get_current_user(request)
+    if user:
+        return await wallet_service.get_all_transaction_by_address(address)
 
 @wallet_router.post('/send-transaction/', status_code=status.HTTP_200_OK)
 @inject

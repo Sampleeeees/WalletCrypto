@@ -12,6 +12,53 @@
         </div>
     </div>
 
+
+    <!-- Import Wallet Modal -->
+              <div class="modal fade" id="watchTransactionsModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-centered1 modal-simple modal-add-new-cc">
+                  <div class="modal-content p-3 p-md-5">
+                    <div class="modal-body">
+                      <button type="button"  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="card-header text-center">Transactions</h5>
+                <div class="table-responsive text-nowrap">
+                  <table class="table table-bordered" style="text-overflow: ellipsis; table-layout: fixed; width: 100%;">
+                    <thead>
+                      <tr>
+                        <th style="width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Hash</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Value</th>
+                        <th>Age</th>
+                        <th>Fee</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="transaction_body" class="table-border-bottom-0">
+                      <!--Trasactions user-->
+                      <!--/Trasactions user-->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <!--/ Basic Bootstrap Table -->
+
+                    </div>
+                  </div>
+                </div>
+
+              <!--/ Import wallet modal -->
+
+{#     <button type="submit" onclick="" class="btn btn-primary me-sm-3 me-1">Submit</button>#}
+{#                          <button#}
+{#                            type="reset"#}
+{#                            class="btn btn-label-secondary btn-reset"#}
+{#                            data-bs-dismiss="modal"#}
+{#                            aria-label="Close"#}
+{##}
+{#                          >#}
+{#                            Cancel#}
+{#                          </button>#}
+
 {% endblock %}
 {% block script %}
      <script src="{{ url_for('static', path='/crypto/js/wallet.js') }}"></script>
