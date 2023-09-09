@@ -32,6 +32,12 @@ class UserService:
                 return user
             raise NotFoundException(detail="Такого користувача не знайдено")
 
+    async def get_image_by_user_id(self, user_id: int):
+        async with self.session_factory() as db:
+            user = await db.get(User, user_id)
+            if user:
+                return user.avatar
+
     async def delete_user(self, user_id: int):
         async with self.session_factory() as db:
             user = await self.get_user(user_id)

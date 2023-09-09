@@ -3,6 +3,7 @@ const user_basic_profile_url = window.location.origin + "/api/v1/user/profile/"
 const header_basic_avatar = $("#header_avatar")
 const basic_dropdown_image = $('#dropdown_image')
 const user_basic_nickname = $('#user_basic_username')
+const user_id = $('#user_id')
 
 window.addEventListener('load', () => {
     const loader = document.querySelector('.loader');
@@ -28,6 +29,7 @@ function load_basic_user_profile(){
         success: function (data){
             console.log(data)
             user_basic_nickname.text(data.username)
+            user_id.text(data.id)
             if(data.avatar){
                 basic_dropdown_image.attr('src', data.avatar)
                 header_basic_avatar.attr('src', data.avatar)

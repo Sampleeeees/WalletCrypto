@@ -18,6 +18,8 @@ async def get_token(cookies: list):
             return cookie.split(' ')[1].strip('"')
 
 
+
+
 @sio.event
 @inject
 async def connect(sid, environ, user_service: UserService = Provide[Container.user_service]):
@@ -25,6 +27,9 @@ async def connect(sid, environ, user_service: UserService = Provide[Container.us
     token_encoded = await get_token(cookies=cookies)
     token = jwt.decode(jwt=token_encoded, key=settings.SECRET_KEY, algorithms=['HS256'])
     user_id = token.get('user_id')
+    async with sio.session(sid) as session:
+        session['user_id'] = user_id
+        session['avatar'] = await user_service.get_image_by_user_id(user_id)
 
 
     print('New connect')
@@ -34,9 +39,11 @@ async def connect(sid, environ, user_service: UserService = Provide[Container.us
 
 
 
-@sio.on('test')
-async def test_handle(sid, data):
-    print('Hello', data)
+@sio.on('my_message')
+async def my_message(sid, data):
+    print('Your message:', data)
+    async with sio.session(sid) as session:
+        await sio.emit('message', {'message': data, 'user_id': session['user_id'], 'avatar': session['avatar']})
 
 
 @sio.on('fastapi')
