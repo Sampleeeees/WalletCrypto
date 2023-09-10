@@ -1,10 +1,19 @@
 const socket = io('ws://127.0.0.1:8000', {path: '/ws/socket.io'});
+const latest_message = window.location.origin + "/api/v1/messages/"
 const user_cookie = document.cookie
 const block_message = $('#block_message')
 const insert_image = $('#insert_image_chat')[0]
 const check_image = $('#check_image')
 
 
+var chatHistoryBody = document.querySelector('.chat-history-body');
+
+// Ініціалізуємо PerfectScrollbar на цьому елементі
+var ps = new PerfectScrollbar(chatHistoryBody);
+
+$(document).ready(function (){
+    get_10_last_messages()
+})
 
 socket.on('connect', () => {
     console.log('connected')
@@ -17,8 +26,8 @@ socket.on('disconnect', () => {
     console.log('disconnect')
 })
 
+
 function get_image(image){
-    console.log('Image', image.files[0]);
     let header_name_image = $('#header_name_image');
     let name_image = $('#name_insert_image')[0];
     let chat_image = image.files[0];
@@ -27,7 +36,6 @@ function get_image(image){
     }else{
         name_image.innerText = chat_image.name;
         header_name_image.text(chat_image.name);
-        console.log(name_image);
         show_preview_chat_image(chat_image);}
 }
 
@@ -65,7 +73,7 @@ function send_message(){
                 const modal_image_result = event.target.result;
                 name_image.innerText = '';
                 insert_image.value = '';
-                // socket.emit('my_message', {'message': message.value, 'image': modal_image_result})
+                socket.emit('my_message', {'message': message.value, 'image': modal_image_result})
 
             };
 
@@ -84,6 +92,8 @@ socket.on('message', (data) => {
     let user_chat_image = ''
     let img_class = 'd-none'
     let img_src = null
+
+    let my_date = new Date().toLocaleDateString(['en-US'], {day: 'numeric', month: 'long'}) + ', ' +new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
 
     if(data.image){
         img_class = '';
@@ -105,15 +115,16 @@ socket.on('message', (data) => {
                               <div class="chat-message-wrapper flex-grow-1">
                                 <div class="chat-message-text">
                                   <p class="mb-0">${data.message}</p>
-                                  <img class="${img_class}" src="${img_src}" alt="">
+                                  <img width="auto" style="max-width: 250px;" height="auto" class="${img_class} mt-2" src="${img_src}" alt="">
                                 </div>
                                 <div class="text-end text-muted mt-1">
                                   <i class="ti ti-checks ti-xs me-1 text-success"></i>
-                                  <small>${new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</small>
+                                  <small>${my_date}</small>
                                 </div>
                               </div>
                               <div class="user-avatar flex-shrink-0 ms-3">
                                 <div class="avatar avatar-sm">
+                                  <p></p>
                                   <img src="${user_chat_image}" alt="Avatar" class="rounded-circle" />
                                 </div>
                               </div>
@@ -131,9 +142,10 @@ socket.on('message', (data) => {
                               <div class="chat-message-wrapper flex-grow-1">
                                 <div class="chat-message-text">
                                   <p class="mb-0">${data.message}</p>
+                                  <img width="auto" style="max-width: 250px;" height="auto" class="${img_class} mt-2" src="${img_src}" alt="">
                                 </div>
                                 <div class="text-muted mt-1">
-                                  <small>${new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</small>
+                                  <small>${my_date}</small>
                                 </div>
                               </div>
                             </div>
@@ -142,3 +154,67 @@ socket.on('message', (data) => {
     }
 
 })
+
+function get_10_last_messages(){
+    $.ajax({
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        url: latest_message,
+        success: function (data){
+            console.log('10 message', data)
+            for(let i in data) {
+                let img_class = 'd-none'
+                let img_src = null
+                let my_date = new Date(data[i].date_send).toLocaleDateString(['en-US'], {day: 'numeric', month: 'long'}) + ', ' +new Date(data[i].date_send).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
+                if (data[i].image) {
+                    img_class = '';
+                    img_src = data[i].image
+                }
+                if (data[i].user_id === parseInt(user_id.text())) {
+                    let my_message_block = `<li class="chat-message chat-message-right">
+                            <div class="d-flex overflow-hidden">
+                              <div class="chat-message-wrapper flex-grow-1">
+                                <div class="chat-message-text">
+                                  <p class="mb-0">${data[i].content}</p>
+                                  <img width="auto" style="max-width: 250px;" height="auto" class="${img_class} mt-2" src="${img_src}" alt="">
+                                </div>
+                                <div class="text-end text-muted mt-1">
+                                  <i class="ti ti-checks ti-xs me-1 text-success"></i>
+                                  <small>${my_date}</small>
+                                </div>
+                              </div>
+                              <div class="user-avatar flex-shrink-0 ms-3">
+                                <div class="avatar avatar-sm">
+                                  <p></p>
+                                  <img src="" alt="Avatar" class="rounded-circle" />
+                                </div>
+                              </div>
+                            </div>
+                          </li>`
+                    block_message.append(my_message_block)
+                } else {
+                    let other_message_block = ` <li class="chat-message">
+                            <div class="d-flex overflow-hidden">
+                              <div class="user-avatar flex-shrink-0 me-3">
+                                <div class="avatar avatar-sm">
+                                  <img src="" alt="Avatar" class="rounded-circle" />
+                                </div>
+                              </div>
+                              <div class="chat-message-wrapper flex-grow-1">
+                                <div class="chat-message-text">
+                                  <p class="mb-0">${data[i].content}</p>
+                                  <img width="auto" style="max-width: 250px;" height="auto" class="${img_class} mt-2" src="${img_src}" alt="">
+                                </div>
+                                <div class="text-muted mt-1">
+                                  <small>${my_date}</small>
+                                </div>
+                              </div>
+                            </div>
+                          </li>`
+                    block_message.append(other_message_block)
+                }
+            }}
+    })
+}

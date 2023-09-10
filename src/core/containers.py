@@ -6,6 +6,7 @@ from config.database import Database
 from config_fastapi import settings
 
 from src.authentication.permissions import Permission
+from src.chats.service import ChatService
 from src.core.storage_bunny import BunnyStorage
 from src.delivery.service import DeliveryService
 from src.ibay.service import IBayService
@@ -73,6 +74,11 @@ class Container(containers.DeclarativeContainer):
 
     delivery_service = providers.Factory(
         DeliveryService,
+        session_factory=database.provided.get_db_session
+    )
+
+    chat_service = providers.Factory(
+        ChatService,
         session_factory=database.provided.get_db_session
     )
 

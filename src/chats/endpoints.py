@@ -11,6 +11,7 @@ from config.database import Database
 from src.authentication.permissions import Permission
 from src.chats import schemas
 from src.chats.models import Message
+from src.chats.service import ChatService
 from src.core.containers import Container
 
 chat_router = APIRouter()
@@ -46,6 +47,15 @@ async def send_message(request: Request,
                 return message
             raise HTTPException(detail='Повідомлення під таким id не знайдено', status_code=status.HTTP_404_NOT_FOUND)
 
+
+@chat_router.get('/messages/', status_code=status.HTTP_200_OK)
+@inject
+async def get_10_last_message(request: Request,
+                              permission: Permission = Depends(Provide[Container.permission]),
+                              chat_service: ChatService = Depends(Provide[Container.chat_service])):
+    user = await permission.get_current_user(request)
+    if user:
+        return await chat_service.get_messages()
 
 @chat_router.post('/message/', status_code=status.HTTP_200_OK)
 @inject
