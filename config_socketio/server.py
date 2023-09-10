@@ -6,6 +6,7 @@ from config_fastapi import settings
 from dependency_injector.wiring import inject, Provide
 
 from src.core.containers import Container
+from src.core.storage_bunny import BunnyStorage
 from src.parser.service import ParserService
 from src.users.service import UserService
 
@@ -40,10 +41,15 @@ async def connect(sid, environ, user_service: UserService = Provide[Container.us
 
 
 @sio.on('my_message')
-async def my_message(sid, data):
+@inject
+async def my_message(sid, data, bunny_storage: BunnyStorage = Provide[Container.bunny_storage]):
     print('Your message:', data)
+    if data['image']:
+        image_url = await bunny_storage.upload_image_to_bunny(data['image'])
+    else:
+        image_url = None
     async with sio.session(sid) as session:
-        await sio.emit('message', {'message': data, 'user_id': session['user_id'], 'avatar': session['avatar']})
+        await sio.emit('message', {'message': data["message"], 'image': image_url, 'user_id': session['user_id'], 'avatar': session['avatar']})
 
 
 @sio.on('fastapi')

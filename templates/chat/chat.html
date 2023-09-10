@@ -56,10 +56,10 @@
                             placeholder="Type your message here"
                           />
                           <div class="message-actions d-flex align-items-center">
-                            <p id="name_insert_image" class="my-auto"></p>
+                            <p id="name_insert_image" data-bs-toggle="modal" data-bs-target="#showImagePreview" class="my-auto cursor-pointer"></p>
                             <label for="insert_image_chat" class="form-label mb-0">
                               <i class="ti ti-photo ti-sm cursor-pointer mx-3"></i>
-                              <input type="file" id="insert_image_chat" hidden />
+                              <input type="file" onchange="get_image(this)" id="insert_image_chat" hidden />
                             </label>
                             <button type="button" class="btn btn-primary d-flex send-msg-btn">
                               <i class="ti ti-send me-md-1 me-0"></i>
@@ -74,6 +74,26 @@
                   <div class="app-overlay"></div>
                 </div>
               </div>
+    <!-- Import Wallet Modal -->
+              <div class="modal fade" id="showImagePreview" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered1 modal-simple modal-add-new-cc">
+                  <div class="modal-content p-3 p-md-5">
+                    <div class="modal-body">
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      <div class="text-center mb-4">
+                        <h3 id="header_name_image" class="mb-2">Image</h3>
+                      </div>
+                      <div>
+                          <img height="auto" width="100%" id="check_image" src="" alt="">
+                      </div>
+                        <div class="text-center">
+                        <button type="button" onclick="delete_image()" data-bs-dismiss="modal" aria-label="Close" class="btn btn-danger mt-3">Видалити</button>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!--/ Import wallet modal -->
 {% endblock %}
 
 {% block script %}
