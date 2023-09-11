@@ -2,24 +2,63 @@ const socket = io('ws://127.0.0.1:8000', {path: '/ws/socket.io'});
 const latest_message = window.location.origin + "/api/v1/messages/"
 const user_cookie = document.cookie
 const block_message = $('#block_message')
+const chat_history = $('#chat_history')
 const insert_image = $('#insert_image_chat')[0]
 const check_image = $('#check_image')
+const online_block = $('#contact-list')
 
 
-var chatHistoryBody = document.querySelector('.chat-history-body');
+let chatHistoryBody = document.querySelector('.chat-history-body');
 
-// Ініціалізуємо PerfectScrollbar на цьому елементі
-var ps = new PerfectScrollbar(chatHistoryBody);
+// Ініціалізуємо PerfectScrollbar
+let ps = new PerfectScrollbar(chatHistoryBody);
 
 $(document).ready(function (){
     get_10_last_messages()
+
 })
+
 
 socket.on('connect', () => {
     console.log('connected')
     socket.emit('test', user_cookie)
+
 })
 
+// Функція для відображення списку онлайн користувачів
+function updateUsersList(users) {
+    console.log('users', users)
+    users.forEach((user) => {
+            let user_img = base_image
+        if ((parseInt(user_id.text())) === user.user_id){}else{
+            if(user.avatar){
+                user_img = user.avatar
+            }
+            let user_data = `<li class="chat-contact-list-item">
+                                  <a class="d-flex align-items-center">
+                                    <div class="flex-shrink-0 avatar avatar-online">
+                                      <img src="${user_img}" alt="Avatar" class="rounded-circle">
+                                    </div>
+                                    <div class="chat-contact-info flex-grow-1 ms-2">
+                                      <h6 class="chat-contact-name text-truncate m-0">${user.username}</h6>
+                                    </div>
+                                  </a>
+                                </li>`
+            online_block.append(user_data)
+
+    }})
+}
+
+// Отримання та відображення списку онлайн користувачів
+socket.on('update_users_status', (users) => {
+    online_block[0].innerHTML = '';
+    updateUsersList(users);
+});
+
+socket.on('transaction', () => {
+    console.log('Hello')
+    toastr.success('Hello', 'Hello')
+})
 
 
 socket.on('disconnect', () => {
@@ -38,6 +77,7 @@ function get_image(image){
         header_name_image.text(chat_image.name);
         show_preview_chat_image(chat_image);}
 }
+
 
 function show_preview_chat_image(image){
     let modal_image = image;
@@ -83,9 +123,11 @@ function send_message(){
             console.log(message.value)
             socket.emit('my_message', {'message': message.value, 'image': null})
         }
+        message.value = '';
     }else{
         toastr.error('Введіть в поле якесь повідомлення', 'Error')
     }
+
 }
 
 socket.on('message', (data) => {
@@ -130,7 +172,7 @@ socket.on('message', (data) => {
                               </div>
                             </div>
                           </li>`
-    block_message.append(my_message_block)
+        block_message.append(my_message_block)
     }else{
         let other_message_block = ` <li class="chat-message">
                             <div class="d-flex overflow-hidden">
@@ -152,7 +194,7 @@ socket.on('message', (data) => {
                           </li>`
         block_message.append(other_message_block)
     }
-
+    chatHistoryBody.scrollTop = chatHistoryBody.scrollHeight;
 })
 
 function get_10_last_messages(){
@@ -164,7 +206,8 @@ function get_10_last_messages(){
         url: latest_message,
         success: function (data){
             console.log('10 message', data)
-            for(let i in data) {
+            for(let i = data.length - 1; i >= 0; i--) {
+                let user_chat_image = null;
                 let img_class = 'd-none'
                 let img_src = null
                 let my_date = new Date(data[i].date_send).toLocaleDateString(['en-US'], {day: 'numeric', month: 'long'}) + ', ' +new Date(data[i].date_send).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
@@ -172,6 +215,13 @@ function get_10_last_messages(){
                     img_class = '';
                     img_src = data[i].image
                 }
+
+                if (data[i].avatar){
+                    user_chat_image = data[i].avatar
+                }else{
+                    user_chat_image = base_image
+                }
+
                 if (data[i].user_id === parseInt(user_id.text())) {
                     let my_message_block = `<li class="chat-message chat-message-right">
                             <div class="d-flex overflow-hidden">
@@ -188,7 +238,7 @@ function get_10_last_messages(){
                               <div class="user-avatar flex-shrink-0 ms-3">
                                 <div class="avatar avatar-sm">
                                   <p></p>
-                                  <img src="" alt="Avatar" class="rounded-circle" />
+                                  <img src="${user_chat_image}" alt="Avatar" class="rounded-circle" />
                                 </div>
                               </div>
                             </div>
@@ -199,7 +249,7 @@ function get_10_last_messages(){
                             <div class="d-flex overflow-hidden">
                               <div class="user-avatar flex-shrink-0 me-3">
                                 <div class="avatar avatar-sm">
-                                  <img src="" alt="Avatar" class="rounded-circle" />
+                                  <img src="${user_chat_image}" alt="Avatar" class="rounded-circle" />
                                 </div>
                               </div>
                               <div class="chat-message-wrapper flex-grow-1">
@@ -215,6 +265,16 @@ function get_10_last_messages(){
                           </li>`
                     block_message.append(other_message_block)
                 }
-            }}
-    })
+            }chatHistoryBody.scrollTop = chatHistoryBody.scrollHeight;
+        }
+
+    }
+    )
 }
+
+// send message when you press enter
+$(document).keydown(function(e) {
+    if (e.keyCode === 13) {
+        send_message()
+    }
+})

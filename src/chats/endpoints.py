@@ -13,6 +13,7 @@ from src.chats import schemas
 from src.chats.models import Message
 from src.chats.service import ChatService
 from src.core.containers import Container
+from src.users.service import UserService
 
 chat_router = APIRouter()
 
@@ -52,10 +53,19 @@ async def send_message(request: Request,
 @inject
 async def get_10_last_message(request: Request,
                               permission: Permission = Depends(Provide[Container.permission]),
-                              chat_service: ChatService = Depends(Provide[Container.chat_service])):
+                              chat_service: ChatService = Depends(Provide[Container.chat_service]),
+                              user_service: UserService = Depends(Provide[Container.user_service])):
     user = await permission.get_current_user(request)
     if user:
-        return await chat_service.get_messages()
+        messages_with_avatar = []
+        messages = await chat_service.get_messages()
+        for message in messages:
+            messages_with_avatar.append({'content': message.content,
+                                         'date_send': message.date_send,
+                                         'user_id': message.user_id,
+                                         'image': message.image,
+                                         'avatar': await user_service.get_image_by_user_id(user_id=message.user_id)})
+        return messages_with_avatar
 
 @chat_router.post('/message/', status_code=status.HTTP_200_OK)
 @inject

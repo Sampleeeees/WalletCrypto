@@ -12,31 +12,49 @@ from src.users.service import UserService
 mgr = socketio.AsyncAioPikaManager(settings.RABBITMQ_URI)
 sio = socketio.AsyncServer(client_manager=mgr, async_mode='asgi', cors_allowed_origins="*", logger=True)
 
+online_users = []
+
+# Отримання з кукісів токен
 async def get_token(cookies: list):
     for cookie in cookies:
         if cookie.startswith('Authorization='):
             return cookie.split(' ')[1].strip('"')
 
 
-
-
 @sio.event
 @inject
 async def connect(sid, environ, user_service: UserService = Provide[Container.user_service]):
-    cookies = environ.get('HTTP_COOKIE').split('; ')
-    token_encoded = await get_token(cookies=cookies)
-    token = jwt.decode(jwt=token_encoded, key=settings.SECRET_KEY, algorithms=['HS256'])
-    user_id = token.get('user_id')
+    cookies = environ.get('HTTP_COOKIE').split('; ') # Отримання всіх кукісів
+    token_encoded = await get_token(cookies=cookies) # Отримання токену з кукіс
+    token = jwt.decode(jwt=token_encoded, key=settings.SECRET_KEY, algorithms=['HS256']) #Розкодування токену
+    user_id = token.get('user_id') # Отримання user_id з токену
+    user = await user_service.get_user(user_id) # Отримати повні дані профілю
+
+    if len(online_users) != 0: # Якщо список юзерів не пустий
+        for user_data in online_users:
+            if user_data['user_id'] != user_id:
+                online_users.append({'user_id': user_id,
+                             'avatar': user.avatar,
+                             'username': user.username})
+    else:
+        online_users.append({'user_id': user_id,
+                             'avatar': user.avatar,
+                             'username': user.username})
+    await sio.emit('update_users_status', online_users) # Відправка події на фронт
+
+    room_name = f"user_{user_id}"
+    sio.enter_room(sid, room_name)
+
     async with sio.session(sid) as session:
         session['user_id'] = user_id
         session['avatar'] = await user_service.get_image_by_user_id(user_id)
+    await sio.emit('transaction', room=room_name)
 
 
     print('New connect')
     print(user_id)
     # user = await user_service.get_user(user_id=user_id)
     # print('USer', user)
-
 
 
 @sio.on('my_message')
@@ -76,4 +94,9 @@ async def get_balance(sid, data):
 @sio.on("disconnect")
 async def disconnect(sid):
     print(f"Client {sid} disconnected")
+    async with sio.session(sid) as session:
+        for user in online_users:
+            if user['user_id'] == session['user_id']:
+                online_users.remove(user)
+        await sio.emit('update_users_status', online_users)
 

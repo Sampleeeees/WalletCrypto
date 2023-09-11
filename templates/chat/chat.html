@@ -18,13 +18,8 @@
                   >
                     <div class="sidebar-body">
                       <!-- Contacts -->
+                      <h5 class="text-primary text-center m-2">Online Users</h5>
                       <ul class="list-unstyled chat-contact-list mb-0" id="contact-list">
-                        <li class="chat-contact-list-item chat-contact-list-item-title">
-                          <h5 class="text-primary mb-0">Online Users</h5>
-                        </li>
-                        <li class="chat-contact-list-item contact-list-item-0 d-none">
-                          <h6 class="">No Contacts Found</h6>
-                        </li>
                         <li class="chat-contact-list-item">
                           <a class="d-flex align-items-center">
                             <div class="flex-shrink-0 avatar avatar-online">
@@ -43,14 +38,14 @@
                   <!-- Chat History -->
                   <div class="col app-chat-history bg-body">
                     <div class="chat-history-wrapper">
-                      <div class="chat-history-body bg-body">
+                      <div id="chat_history" class="chat-history-body bg-body">
                         <ul id="block_message" class="list-unstyled chat-history">
 
                         </ul>
                       </div>
                       <!-- Chat message form -->
                       <div class="chat-history-footer shadow-sm">
-                        <form class="form-send-message d-flex justify-content-between align-items-center">
+                        <form onsubmit="return false" class="form-send-message d-flex justify-content-between align-items-center">
                           <input
                             id="my_message"
                             class="form-control message-input border-0 me-3 shadow-none"

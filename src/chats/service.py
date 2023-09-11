@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import select
+from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.chats.models import Message
@@ -19,5 +19,5 @@ class ChatService:
 
     async def get_messages(self):
         async with self.session_factory() as db:
-            results = await db.execute(select(Message).limit(10))
+            results = await db.execute(select(Message).order_by(desc(Message.id)).limit(10))
             return results.scalars().all()
