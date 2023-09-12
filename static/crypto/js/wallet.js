@@ -55,10 +55,10 @@ function new_wallet_block(wallet){
                     </div>
                     <div class="text-center mt-2 mb-3">
                         <div class="d-flex justify-content-center">
-                            <button onclick="get_wallet_transaction(${wallet.id})" data-bs-toggle="modal" data-bs-target="#watchTransactionsModal" class="btn btn-primary waves-effect waves-light m-3 ">Watch transactions</button>
+                            <button onclick="get_wallet_transaction(${wallet.id})" class="btn btn-primary waves-effect waves-light m-3 ">Watch transactions</button>
                             <button data-bs-toggle="modal" onclick="send_transaction(${wallet.id})" data-bs-target="#sendTransactionsModal" class="btn btn-success waves-effect waves-light m-3">Send Transaction</button>
                         </div>
-                        <button class="col-11 btn btn-light waves-effect waves-light m-3">Get 0.5 ETH</button>
+                        <a href="https://sepoliafaucet.com/" class="col-11 btn btn-light waves-effect waves-light m-3">Get 0.5 ETH</a>
                     </div>
                 </div>
             </div>`
@@ -160,7 +160,10 @@ function get_wallet_transaction(wallet_id){
         url: transaction_by_address_url + address.text,
         success: function (data){
             console.log(data)
-            for(let i in data){
+            let table_head = $('#transaction_head')
+            if (data.length !== 0){
+                $('#watchTransactionsModal').modal('show');
+                for(let i in data){
                 let txn = data[i]
                 let new_transaction = `<tr>
                         <td title="${txn.hash}" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">
@@ -170,10 +173,14 @@ function get_wallet_transaction(wallet_id){
                         <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${txn.to_send}</td>
                         <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${txn.value} Eth</td>
                         <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${getElapsedTime(data[i].date_send)}</td>
-                        <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${txn.txn_fee} Eth</td>
-                        <td><span class="badge bg-label-success me-1">${txn.status}</span></td>
+                        <td style="font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;">${parseFloat(txn.txn_fee)} Eth</td>
+                        <td><span class="${get_status_option(txn.status)}">${txn.status}</span></td>
                       </tr>`
                 transaction_body.append(new_transaction)
+            }
+            }else{
+                toastr.warning('У цього гаманця немає жодної транзакції', 'Warning')
+                console.log('Goodbye')
             }
         },
         error: function (data){
@@ -202,4 +209,15 @@ function getElapsedTime(dateString) {
     const days = Math.floor(secondsDifference / 86400);
     return `${days} days`;
   }
+}
+
+
+function get_status_option(status){
+    if (status === 'Pending'){
+        return 'badge bg-label-warning me-1'
+    }else if(status === 'Success'){
+        return 'badge bg-label-success me-1'
+    }else if(status === 'Failed'){
+        return 'badge bg-label-danger me-1'
+    }
 }

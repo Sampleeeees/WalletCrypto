@@ -57,11 +57,6 @@ class WalletService:
             if result:
                 return result.scalar()
 
-    async def get_wallets_from_transaction_new(self, addresses: set):
-        async with self.session_factory() as db:
-            results = await db.execute(select(Wallet).where(Wallet.address.in_(addresses)))
-            return [wallet.address for wallet in results.scalars().all()]
-
     # Отримання гаманців для авторизованого користувача
     async def get_wallets_user(self, user_id: int, wallet_id: int = None):
         async with self.session_factory() as db:
@@ -72,13 +67,13 @@ class WalletService:
                 result = await db.execute(select(Wallet).where(Wallet.user_id == user_id))
                 return result.scalars().all()
 
+    # Отримання всіх транзакцій по адресі
     async def get_all_transaction_by_address(self, address: str):
         async with self.session_factory() as db:
             results = await db.execute(select(Transaction)
                                        .where(or_(Transaction.from_send == address, Transaction.to_send == address))
                                        .order_by(Transaction.date_send))
             return results.scalars().all()
-
 
     # Перевірка чи є така транзакція в базі даних
     async def get_transaction_in_db(self, txn_hash: str) -> Union[Transaction, bool]:
