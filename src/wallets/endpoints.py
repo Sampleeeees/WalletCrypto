@@ -9,7 +9,7 @@ from dependency_injector.wiring import Provide, inject
 from src.core.containers import Container
 from .models import Wallet
 from .service import WalletService
-
+from ..users.service import UserService
 
 wallet_router = APIRouter()
 
@@ -111,4 +111,16 @@ async def get_transaction_by_hash(txn_hash: str,
             transaction = await wallet_service.get_transaction_in_db(txn_hash)
             return transaction
         raise HTTPException(detail='Ви ввели невірний хеш', status_code=status.HTTP_400_BAD_REQUEST)
+
+@wallet_router.get('/wallet/private_key/', status_code=status.HTTP_200_OK)
+@inject
+async def get_private_key_address(address: str,
+                                  request: Request,
+                                  permission: Permission = Depends(Provide[Container.permission]),
+                                  wallet_service: WalletService = Depends(Provide[Container.wallet_service]),
+                                  user_service: UserService = Depends(Provide[Container.user_service])):
+    user = await permission.get_current_user(request)
+    if user:
+        wallet = await wallet_service.get_wallet_by_address(address)
+        return wallet.private_key
 

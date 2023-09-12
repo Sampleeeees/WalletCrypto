@@ -1,19 +1,26 @@
-const wallets_user_url = window.location.origin + "/api/v1/wallets/current-user/"
-const transaction_by_address_url = window.location.origin + "/api/v1/wallet/transactions/"
+const wallets_user_url = window.location.origin + "/api/v1/wallets/current-user/" // URL для отримання всіх гаманців юзера
+const transaction_by_address_url = window.location.origin + "/api/v1/wallet/transactions/" // URL для отримання всіх транзакцій по адресу
+const get_private_key_url = window.location.origin + "/api/v1/wallet/private_key/" // URL для отримання приватного ключа по адресу
+const send_transaction_url = window.location.origin + "/api/v1/send-transaction/" // URL для відправки транзакції
 
-const wallet_block = $('#wallets_user_block')
-const transaction_body = $('#transaction_body')
+const wallet_block = $('#wallets_user_block') // Блок в який вставляється всі гаманці юзера
+const transaction_body = $('#transaction_body') // Блок в який записуються всі транзакції по адресі
 
+const submit_button = $('#submit_send_transaction') // Кнопка яка відправляє транзакцію
 
+//--//Завантаження всіх гаманців юзера//--//
 $(document).ready(function (){
     render_wallets()
 })
 
+//--//Очиска вмісту модалки коли вона закривається//--//
 $('#watchTransactionsModal').on('hidden.bs.modal', function () {
     // Очистіть вміст таблиці
     $('#transaction_body').empty();
 });
 
+
+//--//Функція яка робить запит на отримання всіх гаманців юзера//--//
 function render_wallets(){
     $.ajax({
         method: "GET",
@@ -31,7 +38,7 @@ function render_wallets(){
     })
 }
 
-
+//--//Функція яка відмальовує блок з даними гаманця//--//
 function new_wallet_block(wallet){
     let new_block = `
         <div class="col my-auto">
@@ -49,7 +56,7 @@ function new_wallet_block(wallet){
                     <div class="text-center mt-2 mb-3">
                         <div class="d-flex justify-content-center">
                             <button onclick="get_wallet_transaction(${wallet.id})" data-bs-toggle="modal" data-bs-target="#watchTransactionsModal" class="btn btn-primary waves-effect waves-light m-3 ">Watch transactions</button>
-                            <button class="btn btn-success waves-effect waves-light m-3">Send Transaction</button>
+                            <button data-bs-toggle="modal" onclick="send_transaction(${wallet.id})" data-bs-target="#sendTransactionsModal" class="btn btn-success waves-effect waves-light m-3">Send Transaction</button>
                         </div>
                         <button class="col-11 btn btn-light waves-effect waves-light m-3">Get 0.5 ETH</button>
                     </div>
@@ -58,10 +65,93 @@ function new_wallet_block(wallet){
     wallet_block.append(new_block)
 }
 
+//--// Валідація чи складається це поле лише з чисел//--//
+function isNumber(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
 
+//--/ Отримання private key з запиту на endpoint /--//
+async function get_private_key(address) {
+    try {
+        const response = await $.ajax({
+            method: "GET",
+            dataType: 'json',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: { address: address },
+            url: get_private_key_url,
+        });
+
+        console.log(response);
+        return response; // Повертаємо значення приватного ключа
+    } catch (error) {
+        console.error('Error:', error);
+        return null;
+    }
+}
+
+//--//Функція для відправки транзакції//--//
+async function send_transaction(element){
+    let wallet_address = $('#wallet_address_'+element)[0] //Отримання гаманця який відображеється в блоку
+    let address_to_send = $('#address_to_send') // Отримання адресу на який потрібно відправити
+    let value = $('#value_send') // Отримання скільки юзер хоче відправити
+    let private_key = await get_private_key(wallet_address.text) // Отримання приватного ключа з запиту до нового api endpoint
+
+
+
+    submit_button.off('click') //Видаляємо всю історію з минулого кліку на кнопку
+
+    submit_button.on('click', function (){
+
+        //--//Якщо поле з адресою пусте//--//
+        if (!address_to_send.val()){
+            toastr.error('Поле send to не можу бути пустим', 'Error')
+            return;
+        }
+
+        //--//Якщо поле з value пусте//--//
+        if (!value.val()){
+            toastr.error('Поле value не можу бути пустим', 'Error')
+            return;
+        }
+
+        //--//Чи містить поле value тільки цифри//--//
+        if(!isNumber(value.val())){
+            toastr.error('Невірний формат поля value', 'Error')
+            return;
+        }
+
+        //--//Відправка POST запиту на бек для відправки транзакції//--//
+        $.ajax({
+            method: 'POST',
+            dataType: 'json',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({"from_send": wallet_address.text,
+                "to_send": address_to_send.val().trim(),
+                "value": value.val(),
+                "private_key": private_key}),
+            url: send_transaction_url,
+            success: function (data){
+                toastr.success('Транзакція пройшла успішно', 'Success')
+                $('#sendTransactionsModal').modal('hide')
+                $('#getTransactionsModal').modal('show')
+                $('#txn_url')[0].href = `https://sepolia.etherscan.io/tx/${data}`
+            },
+            error: function (data){
+                console.log(data)
+                toastr.error(data.responseJSON.detail, 'Error')
+            }
+
+        })
+    })
+}
+
+//--//Отримання всіх транзакцій по адресі//--//
 function get_wallet_transaction(wallet_id){
     let address = $('#wallet_address_'+ wallet_id)[0]
-    console.log(address.text)
     $.ajax({
         method: 'GET',
         headers: {
@@ -73,14 +163,14 @@ function get_wallet_transaction(wallet_id){
             for(let i in data){
                 let txn = data[i]
                 let new_transaction = `<tr>
-                        <td>
-                          <p>${txn.hash}</p>
+                        <td title="${txn.hash}" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">
+                          ${txn.hash}
                         </td>
-                        <td>${txn.from_send}</td>
-                        <td>${txn.to_send}</td>
-                        <td>${txn.value} Eth</td>
-                        <td>6 secs</td>
-                        <td>${txn.txn_fee} Eth</td>
+                        <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${txn.from_send}</td>
+                        <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${txn.to_send}</td>
+                        <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${txn.value} Eth</td>
+                        <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${getElapsedTime(data[i].date_send)}</td>
+                        <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${txn.txn_fee} Eth</td>
                         <td><span class="badge bg-label-success me-1">${txn.status}</span></td>
                       </tr>`
                 transaction_body.append(new_transaction)
@@ -93,6 +183,23 @@ function get_wallet_transaction(wallet_id){
 }
 
 
-function clear_modal(){
-    transaction_body.remove()
+//--//Функція для перетворення часу//--//
+function getElapsedTime(dateString) {
+  const currentDate = new Date();
+  const sentDate = new Date(dateString);
+  const timeDifference = currentDate - sentDate;
+  const secondsDifference = Math.floor(timeDifference / 1000);
+
+  if (secondsDifference < 60) {
+    return `${secondsDifference} secs`;
+  } else if (secondsDifference < 3600) {
+    const minutes = Math.floor(secondsDifference / 60);
+    return `${minutes} min`;
+  } else if (secondsDifference < 86400) {
+    const hours = Math.floor(secondsDifference / 3600);
+    return `${hours} hours`;
+  } else {
+    const days = Math.floor(secondsDifference / 86400);
+    return `${days} days`;
+  }
 }

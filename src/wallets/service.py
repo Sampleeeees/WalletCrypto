@@ -74,7 +74,9 @@ class WalletService:
 
     async def get_all_transaction_by_address(self, address: str):
         async with self.session_factory() as db:
-            results = await db.execute(select(Transaction).where(or_(Transaction.from_send == address, Transaction.to_send == address)))
+            results = await db.execute(select(Transaction)
+                                       .where(or_(Transaction.from_send == address, Transaction.to_send == address))
+                                       .order_by(Transaction.date_send))
             return results.scalars().all()
 
 
@@ -180,6 +182,9 @@ class WalletService:
         # перевірка чи справжні адреси гаманців введено
         if not provider.is_address(item.from_send) or not provider.is_address(item.to_send):
             raise HTTPException(detail='Ви ввели невірний гаманець', status_code=status.HTTP_400_BAD_REQUEST)
+
+        if item.from_send == item.to_send:
+            raise HTTPException(detail="Ви не можете відпрвити транзакцію самому собі", status_code=status.HTTP_400_BAD_REQUEST)
 
         # перевірка чи є на акаунту стільки коштів
         account_balance = provider.eth.get_balance(item.from_send)

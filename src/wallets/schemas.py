@@ -52,6 +52,7 @@ class TransactionCreate(BaseModel):
     private_key: str
 
 
+
 class TransactionInfo(BaseModel):
     """Схема для відображення інформації транзакції"""
     blockHash: str

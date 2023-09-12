@@ -24,7 +24,7 @@
                   <table class="table table-bordered" style="text-overflow: ellipsis; table-layout: fixed; width: 100%;">
                     <thead>
                       <tr>
-                        <th style="width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Hash</th>
+                        <th>Hash</th>
                         <th>From</th>
                         <th>To</th>
                         <th>Value</th>
@@ -47,6 +47,53 @@
                 </div>
 
               <!--/ Import wallet modal -->
+    <!--Send transaction-->
+    <div class="modal fade" id="sendTransactionsModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered1 modal-simple modal-add-new-cc">
+                  <div class="modal-content p-3 p-md-5">
+                    <div class="modal-body">
+                      <button type="button"  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="card-header text-center">Send transaction</h5>
+                <div class="table-responsive text-nowrap">
+                    <div class="col-12 fv-plugins-icon-container mt-2">
+                          <label class="form-label w-100" for="modalAddCard">Send to</label>
+                          <div class="input-group input-group-merge has-validation">
+                            <input id="address_to_send" name="modalAddCard" class="form-control credit-card-mask" type="text" placeholder="Send to" aria-describedby="modalAddCard2">
+                            <span class="input-group-text cursor-pointer p-1" id="modalAddCard2"><span class="card-type"></span></span>
+                          </div><div class="fv-plugins-message-container invalid-feedback"></div>
+                        </div>
+                    <div class="col-12 fv-plugins-icon-container mt-2">
+                          <label class="form-label w-100" for="modalAddCard">Value</label>
+                          <div class="input-group input-group-merge has-validation">
+                            <input id="value_send" name="modalAddCard" class="form-control credit-card-mask" type="text" placeholder="Value" aria-describedby="modalAddCard2">
+                            <span class="input-group-text cursor-pointer p-1" id="modalAddCard2"><span class="card-type"></span></span>
+                          </div><div class="fv-plugins-message-container invalid-feedback"></div>
+                        </div>
+                    <div class="col-12 text-center mt-2">
+                          <button type="submit" id="submit_send_transaction" class="btn btn-success me-sm-3 me-1 waves-effect waves-light">Submit</button>
+                        </div>
+                </div>
+              </div>
+              <!--/ Basic Bootstrap Table -->
+                  </div>
+                </div>
+    </div>
+
+    <!--Send transaction-->
+    <div class="modal fade" id="getTransactionsModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered1 modal-simple modal-add-new-cc">
+                  <div class="modal-content p-3 p-md-5">
+                    <div class="modal-body">
+                      <button type="button"  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="card-header text-center">Transaction sending</h5>
+                <div class="table-responsive text-nowrap text-center mt-3">
+                    <h6>Посилання на транзакцію -> <a id="txn_url" href="">Відкрити посилання</a></h6>
+                </div>
+              </div>
+              <!--/ Basic Bootstrap Table -->
+                  </div>
+                </div>
+    </div>
 
 {#     <button type="submit" onclick="" class="btn btn-primary me-sm-3 me-1">Submit</button>#}
 {#                          <button#}

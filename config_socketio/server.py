@@ -12,7 +12,7 @@ from src.users.service import UserService
 mgr = socketio.AsyncAioPikaManager(settings.RABBITMQ_URI)
 sio = socketio.AsyncServer(client_manager=mgr, async_mode='asgi', cors_allowed_origins="*", logger=True)
 
-online_users = []
+online_users = {}
 
 # Отримання з кукісів токен
 async def get_token(cookies: list):
@@ -30,17 +30,17 @@ async def connect(sid, environ, user_service: UserService = Provide[Container.us
     user_id = token.get('user_id') # Отримання user_id з токену
     user = await user_service.get_user(user_id) # Отримати повні дані профілю
 
-    if len(online_users) != 0: # Якщо список юзерів не пустий
-        for user_data in online_users:
-            if user_data['user_id'] != user_id:
-                online_users.append({'user_id': user_id,
-                             'avatar': user.avatar,
-                             'username': user.username})
-    else:
-        online_users.append({'user_id': user_id,
-                             'avatar': user.avatar,
-                             'username': user.username})
-    await sio.emit('update_users_status', online_users) # Відправка події на фронт
+    print()
+    print(online_users)
+    print()
+
+    if online_users.get(user_id) is None:
+        online_users[user_id] = {
+            'user_id': user.id,
+            'avatar': user.avatar,
+            'username': user.username
+        }
+        await sio.emit('update_users_status', list(online_users.values()))
 
     room_name = f"user_{user_id}"
     sio.enter_room(sid, room_name)
@@ -48,7 +48,8 @@ async def connect(sid, environ, user_service: UserService = Provide[Container.us
     async with sio.session(sid) as session:
         session['user_id'] = user_id
         session['avatar'] = await user_service.get_image_by_user_id(user_id)
-    await sio.emit('transaction', room=room_name)
+        session['username'] = user.username
+
 
 
     print('New connect')
@@ -69,7 +70,7 @@ async def my_message(sid, data,
         image_url = None
     async with sio.session(sid) as session:
         await chat_service.save_message(content=data['message'], image=image_url, user_id=session['user_id'])
-        await sio.emit('message', {'message': data["message"], 'image': image_url, 'user_id': session['user_id'], 'avatar': session['avatar']})
+        await sio.emit('message', {'message': data["message"], 'image': image_url, 'user_id': session['user_id'], 'avatar': session['avatar'], 'username': session['username']})
 
 
 @sio.on('fastapi')
@@ -95,8 +96,9 @@ async def get_balance(sid, data):
 async def disconnect(sid):
     print(f"Client {sid} disconnected")
     async with sio.session(sid) as session:
-        for user in online_users:
-            if user['user_id'] == session['user_id']:
-                online_users.remove(user)
-        await sio.emit('update_users_status', online_users)
+        user_id = session.get('user_id')
+        if user_id is not None and user_id in online_users:
+            del online_users[user_id]
+            await sio.emit('update_users_status', list(online_users.values()))
+
 

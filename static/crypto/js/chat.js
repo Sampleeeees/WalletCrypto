@@ -55,9 +55,10 @@ socket.on('update_users_status', (users) => {
     updateUsersList(users);
 });
 
-socket.on('transaction', () => {
+socket.on('transaction', (data) => {
     console.log('Hello')
-    toastr.success('Hello', 'Hello')
+    console.log('Sokcet data', data)
+    toastr.success(`${data}`, 'Hello')
 })
 
 
@@ -166,7 +167,6 @@ socket.on('message', (data) => {
                               </div>
                               <div class="user-avatar flex-shrink-0 ms-3">
                                 <div class="avatar avatar-sm">
-                                  <p></p>
                                   <img src="${user_chat_image}" alt="Avatar" class="rounded-circle" />
                                 </div>
                               </div>
@@ -236,9 +236,8 @@ function get_10_last_messages(){
                                 </div>
                               </div>
                               <div class="user-avatar flex-shrink-0 ms-3">
-                                <div class="avatar avatar-sm">
-                                  <p></p>
-                                  <img src="${user_chat_image}" alt="Avatar" class="rounded-circle" />
+                                <div class="avatar avatar-sm">                           
+                                  <img src="${user_chat_image}" alt="${data[i].username}" title="${data[i].username}" class="rounded-circle" />
                                 </div>
                               </div>
                             </div>
@@ -249,7 +248,7 @@ function get_10_last_messages(){
                             <div class="d-flex overflow-hidden">
                               <div class="user-avatar flex-shrink-0 me-3">
                                 <div class="avatar avatar-sm">
-                                  <img src="${user_chat_image}" alt="Avatar" class="rounded-circle" />
+                                  <img src="${user_chat_image}" alt="${data[i].username}" title="${data[i].username}" class="rounded-circle" />
                                 </div>
                               </div>
                               <div class="chat-message-wrapper flex-grow-1">

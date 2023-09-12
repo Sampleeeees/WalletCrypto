@@ -8,6 +8,7 @@ from starlette import status
 from starlette.requests import Request
 
 from config.database import Database
+from config_fastapi.fastapi_manager import fastapi_mgr
 from src.authentication.permissions import Permission
 from src.chats import schemas
 from src.chats.models import Message
@@ -59,12 +60,15 @@ async def get_10_last_message(request: Request,
     if user:
         messages_with_avatar = []
         messages = await chat_service.get_messages()
+
         for message in messages:
+            user = await user_service.get_user(message.user_id)
             messages_with_avatar.append({'content': message.content,
                                          'date_send': message.date_send,
                                          'user_id': message.user_id,
                                          'image': message.image,
-                                         'avatar': await user_service.get_image_by_user_id(user_id=message.user_id)})
+                                         'avatar': await user_service.get_image_by_user_id(user_id=message.user_id),
+                                         'username': user.username})
         return messages_with_avatar
 
 @chat_router.post('/message/', status_code=status.HTTP_200_OK)
@@ -109,3 +113,11 @@ async def delete_message(request: Request,
             raise HTTPException(detail='Повідомлення під таким id не знайдено', status_code=status.HTTP_404_NOT_FOUND)
 
 
+@chat_router.get('/test/send-message/', status_code=status.HTTP_200_OK)
+@inject
+async def send_test_room_message(request: Request,
+                                 permission: Permission = Depends(Provide[Container.permission]),
+                                 user_service: UserService = Depends(Provide[Container.user_service])):
+    user = await permission.get_current_user(request)
+    if user:
+        await fastapi_mgr.emit('transaction', "my Message", room=f"user_{user.id}")
