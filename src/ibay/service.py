@@ -16,7 +16,8 @@ class IBayService:
     # Отримання всіх замовлення
     async def get_products(self):
         async with self.session_factory() as db:
-            result = await db.execute(select(Product))
+            result = await db.execute(select(Product)
+                                      .options(joinedload(Product.wallet)))
             return result.scalars().all()
 
     # Отримання замовлення по id

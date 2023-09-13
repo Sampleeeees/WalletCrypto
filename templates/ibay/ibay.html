@@ -17,17 +17,42 @@
     <h3>Products</h3>
     <div class="border border-2 border-gray rounded">
         <div id="product_user_block" class="row row-cols-2">
-        <!--Product User-->
+            <!--Product User-->
 
-        <!--/Product User-->
+                <!--/Product User-->
+            </div>
         </div>
     </div>
     <!--/Products Block-->
+
     <!--Order Block-->
     <h3 class="mt-5">Orders</h3>
     <div class="border border-2 border-gray rounded">
         <div id="order_user_block" class="row row-cols-2">
         <!--Order User-->
+            <div class="col my-auto">
+            <div class="row row-cols-2 m-3 border border-1 border-dark rounded">
+                <div class="col-3 image my-auto text-center">
+                    <img height="120px" width="50px;" src="{{ url_for('static', path='/crypto/img/ethereum.png') }}" alt="">
+                </div>
+                <div class="col-9 pe-5">
+                    <div class="d-flex ms-3 mt-4">
+                        <h5 class="m-0 p-0">Title:</h5>
+                        <p id="title_product" class="ms-2 my-auto text-break">Product 1</p>
+                    </div>
+                    <div class="d-flex ms-3 mt-2">
+                        <h5 class="m-0 p-0">Address:</h5>
+                        <a style="font-size: 12px;" id="wallet_address_${wallet.id}" class="ms-2 my-auto text-break" href="https://etherscan.io/address/${wallet.address}">${wallet.address}</a>
+                    </div>
+                    <div class="d-flex ms-3 mt-2">
+                        <h5 class="m-0 p-0">Price:</h5>
+                        <p class="ms-2 my-auto ">${wallet.balance}</p>
+                    </div>
+                    <div class="text-start mt-2 mb-3">
+                        <button class="btn btn-primary waves-effect waves-light m-3 ">Buy product</button>
+                    </div>
+                </div>
+            </div>
         <!--/Order User-->
         </div>
     </div>
@@ -36,22 +61,30 @@
 
     <!--Create product modal-->
     <div class="modal fade" id="createProductModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered1 modal-simple modal-add-new-cc">
+        <div class="modal-dialog modal-lg modal-simple modal-add-new-cc">
             <div class="modal-content p-3 p-md-5">
                 <div class="modal-body">
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     <h5 class="card-header text-center">Create product</h5>
                     <div class="table-responsive text-nowrap">
                         <div class="col-12 fv-plugins-icon-container mt-2">
-                            <label class="form-label w-100" for="modalAddCard">Send to</label>
+                            <label class="form-label w-100" for="name_product">Name product</label>
                             <div class="input-group input-group-merge has-validation">
-                                <input id="address_to_send" name="modalAddCard" class="form-control credit-card-mask" type="text" placeholder="Name product" aria-describedby="modalAddCard2">
-                                <span class="input-group-text cursor-pointer p-1" id="modalAddCard2"><span class="card-type"></span></span>
+                                <input id="name_product" class="form-control" type="text" placeholder="Name product">
+                                <span class="input-group-text cursor-pointer p-1"><span class="card-type"></span></span>
                             </div>
                             <div class="fv-plugins-message-container invalid-feedback"></div>
                         </div>
-                        <div class="col-12">
-                          <label class="form-label" for="modalEditUserStatus">Status</label>
+                        <div class="col-12 fv-plugins-icon-container mt-2">
+                            <label class="form-label w-100" for="name_product">Price</label>
+                            <div class="input-group input-group-merge has-validation">
+                                <input id="price_product" class="form-control" type="text" placeholder="Price">
+                                <span class="input-group-text cursor-pointer p-1"><span class="card-type"></span></span>
+                            </div>
+                            <div class="fv-plugins-message-container invalid-feedback"></div>
+                        </div>
+                        <div class="col-12 mt-2">
+                          <label class="form-label" for="modalEditUserStatus">Wallet</label>
                             <div>
                               <select
                                 id="modalEditUserWallets"
@@ -71,12 +104,12 @@
                                     <label for="product_image" class="btn btn-secondary">Додати</label>
                                     <p id="name_image_product" class="my-auto ms-3"></p>
                                 </div>
-                                <input id="product_image" class="d-none" type="file">
+                                <input id="product_image" onchange="get_product_image(this)" class="d-none" type="file">
                             </div>
                             <div class="fv-plugins-message-container invalid-feedback"></div>
                         </div>
                         <div class="col-12 text-center mt-4">
-                            <button type="submit" onclick="import_wallet()" class="btn btn-success me-sm-3 me-1">Submit</button>
+                            <button type="submit" onclick="create_product()" class="btn btn-success me-sm-3 me-1">Submit</button>
                             <button type="reset" class="btn btn-label-secondary btn-reset" data-bs-dismiss="modal" aria-label="Close">
                                 Cancel
                             </button>
