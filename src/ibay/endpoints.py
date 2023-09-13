@@ -16,7 +16,7 @@ from src.delivery import schemas as delivery_schemas
 ibay_router = APIRouter()
 
 
-@ibay_router.get('/orders/', status_code=status.HTTP_200_OK)
+@ibay_router.get('/products/', status_code=status.HTTP_200_OK)
 @inject
 async def get_products(request: Request,
                        permission: Permission = Depends(Provide[Container.permission]),

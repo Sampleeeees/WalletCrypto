@@ -1,0 +1,95 @@
+{% extends 'base/basic.html' %}
+
+{% block title %}IBay{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+
+{% block content %}
+    <!--Create product button-->
+    <div class="text-end">
+        <button data-bs-toggle="modal" data-bs-target="#createProductModal" class="btn btn-primary ">Створити продукт</button>
+    </div>
+    <!--/Create product button-->
+
+    <!--Products block-->
+    <h3>Products</h3>
+    <div class="border border-2 border-gray rounded">
+        <div id="product_user_block" class="row row-cols-2">
+        <!--Product User-->
+
+        <!--/Product User-->
+        </div>
+    </div>
+    <!--/Products Block-->
+    <!--Order Block-->
+    <h3 class="mt-5">Orders</h3>
+    <div class="border border-2 border-gray rounded">
+        <div id="order_user_block" class="row row-cols-2">
+        <!--Order User-->
+        <!--/Order User-->
+        </div>
+    </div>
+    <!--/Order Block-->
+
+
+    <!--Create product modal-->
+    <div class="modal fade" id="createProductModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered1 modal-simple modal-add-new-cc">
+            <div class="modal-content p-3 p-md-5">
+                <div class="modal-body">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="card-header text-center">Create product</h5>
+                    <div class="table-responsive text-nowrap">
+                        <div class="col-12 fv-plugins-icon-container mt-2">
+                            <label class="form-label w-100" for="modalAddCard">Send to</label>
+                            <div class="input-group input-group-merge has-validation">
+                                <input id="address_to_send" name="modalAddCard" class="form-control credit-card-mask" type="text" placeholder="Name product" aria-describedby="modalAddCard2">
+                                <span class="input-group-text cursor-pointer p-1" id="modalAddCard2"><span class="card-type"></span></span>
+                            </div>
+                            <div class="fv-plugins-message-container invalid-feedback"></div>
+                        </div>
+                        <div class="col-12">
+                          <label class="form-label" for="modalEditUserStatus">Status</label>
+                            <div>
+                              <select
+                                id="modalEditUserWallets"
+                                name="modalEditUserStatus"
+
+                                class="form-select"
+                                aria-label="Default select example"
+                              >
+                                  <option></option>
+                              </select>
+                                </div>
+                        </div>
+                        <div class="col-12 fv-plugins-icon-container mt-2">
+                            <label class="form-label w-100" for="modalAddCard">Image</label>
+                            <div class="input-group input-group-merge has-validation">
+                                <div class="d-flex">
+                                    <label for="product_image" class="btn btn-secondary">Додати</label>
+                                    <p id="name_image_product" class="my-auto ms-3"></p>
+                                </div>
+                                <input id="product_image" class="d-none" type="file">
+                            </div>
+                            <div class="fv-plugins-message-container invalid-feedback"></div>
+                        </div>
+                        <div class="col-12 text-center mt-4">
+                            <button type="submit" onclick="import_wallet()" class="btn btn-success me-sm-3 me-1">Submit</button>
+                            <button type="reset" class="btn btn-label-secondary btn-reset" data-bs-dismiss="modal" aria-label="Close">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Basic Bootstrap Table -->
+            </div>
+        </div>
+    </div>
+    <!--/Create product modal-->
+{% endblock %}
+
+{% block script %}
+    <script src="{{ url_for('static', path='/crypto/js/ibay.js') }}"></script>
+{% endblock %}

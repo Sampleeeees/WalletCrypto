@@ -42,9 +42,10 @@
     <!-- Core CSS -->
     <link rel="stylesheet" href="{{ url_for('static', path='/assets/vendor/fonts/fontawesome.css') }}" class="template-customizer-core-css" />
     <link rel="stylesheet" href="{{ url_for('static', path='/assets/vendor/css/rtl/theme-default.css') }}" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="{{ url_for('static', path='/assets/vendor/libs/select2/select2.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', path='/assets/vendor/libs/toastr/toastr.css') }}" class="template-customizer-theme-css" />
     <link rel="stylesheet" href="{{ url_for('static', path='/assets/css/demo.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', path='/dist/css/basic.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', path='/crypto/css/basic.css') }}" />
 
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="{{ url_for('static', path='/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
@@ -107,7 +108,7 @@
               </a>
             </li>
             <li class="menu-item">
-              <a href="page-2.html" class="menu-link">
+              <a href="/ibay/" class="menu-link">
                 <i class="menu-icon tf-icons ti ti-shopping-cart"></i>
                 <div data-i18n="Ibay">Ibay</div>
               </a>
@@ -241,6 +242,8 @@
     <script src="{{ url_for('static', path='/assets/vendor/js/bootstrap.js')}}"></script>
     <script src="{{ url_for('static', path='/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js')}}"></script>
     <script src="{{ url_for('static', path='/assets/vendor/libs/node-waves/node-waves.js')}}"></script>
+
+    <script src="{{ url_for('static', path='/assets/vendor/libs/select2/select2.js')}}"></script>
 
     <script src="{{ url_for('static', path='/assets/vendor/libs/hammer/hammer.js')}}"></script>
 
