@@ -27,7 +27,7 @@ async def get_products(request: Request,
         products = await ibay_service.get_products()
         return products
 
-@ibay_router.post('/buy-order/', status_code=status.HTTP_200_OK)
+@ibay_router.post('/buy-product/', status_code=status.HTTP_200_OK)
 @inject
 async def buy_order_by_id(request: Request,
                           product_id: int,
@@ -67,7 +67,7 @@ async def buy_order_by_id(request: Request,
         await delivery_service.create_order(delivery_dict) # Створення замовлення
         return txn_hash
 
-@ibay_router.post('/order/', status_code=status.HTTP_200_OK)
+@ibay_router.post('/product/', status_code=status.HTTP_200_OK)
 @inject
 async def create_product(item: schemas.ProductCreate,
                          request: Request,

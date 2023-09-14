@@ -1,5 +1,6 @@
 const product_api_url = window.location.origin + "/api/v1/products/"
 const wallets_user_url = window.location.origin + "/api/v1/wallets/current-user/" // URL для отримання всіх гаманців юзера
+const create_product_url = window.location.origin + "/api/v1/product/"
 
 
 
@@ -110,25 +111,29 @@ async function create_product(){
     let imageBase64 = await imageInBase64(product_image) //Отримання картинки в base64 форматі
 
     console.log(imageBase64)
+    console.log(product_name, price, wallet_id)
 
 
-    // $.ajax({
-    //     method: "POST",
-    //     dataType: 'json',
-    //     headers: {
-    //         'Content-Type': 'application/json'
-    //     },
-    //     data: {"name": product_name,
-    //            "image": imageBase64,
-    //            "price": price,
-    //            "wallet_id": wallet_id},
-    //     success: function (data){
-    //         toastr.success('Продукт успішно створено', 'Success')
-    //     },
-    //     error: function (data){
-    //         toastr.error(data.responseJSON.detail, 'Error')
-    //     }
-    // })
+    $.ajax({
+        method: "POST",
+        dataType: 'json',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: JSON.stringify({"name": product_name,
+               "image": imageBase64,
+               "price": price,
+               "wallet_id": wallet_id}),
+        url: create_product_url,
+        success: function (data){
+            render_product(data)
+            $('#createProductModal').modal('hide')
+            toastr.success('Продукт успішно створено', 'Success')
+        },
+        error: function (data){
+            toastr.error(data.responseJSON.detail, 'Error')
+        }
+    })
 
 
 }
@@ -160,36 +165,6 @@ function render_product(product){
     product_user_block.append(new_product)
 }
 
-// function show_preview_chat_image(image){
-//     let modal_image = image;
-//     if (modal_image){
-//         const reader = new FileReader();
-//
-//         reader.onload = function (event) {
-//             const modal_image_result = event.target.result;
-//             // Assuming check_image is an <img> element
-//             $('#check_image').attr('src', modal_image_result);
-//         };
-//
-//         reader.readAsDataURL(modal_image);
-//     }
-// }
-
-
-// $('#createProductModal').on('shown.bs.modal', function() {
-//     console.log('Hello select2')
-//     console.log(this)
-//   $(this).find('select').each(function() {
-//     var dropdownParent = $('#createProductModal');
-//     if ($(this).parents('.modal.in:first').length !== 0)
-//       dropdownParent = $(this).parents('.modal.in:first');
-//     $(this).select2({
-//       dropdownParent: dropdownParent,
-//       minimumResultsForSearch: -1
-//       // ...
-//     });
-//   });
-// });
 
 
 function render_products(){

@@ -41,6 +41,9 @@ class IBayService:
             db.add(product)
             await db.commit()
             await db.refresh(product)
-            return product
+            result = await db.execute(select(Product)
+                                      .options(joinedload(Product.wallet))
+                                      .where(Product.id == product.id))
+            return result.scalar()
 
 
