@@ -9,19 +9,27 @@ const product_user_block = $('#product_user_block') // Блок з продук�
 const order_user_block = $('#order_user_block') // Блок з замовленнями користувача
 
 const select_user_wallets = $('#modalEditUserWallets') //
+const select_user_wallets_buy = $('#selectWalletsUser')
 
 
 //--//Виконання функцій коли викликана сторінка//--//
 $(window).on('load', function (){
+    render_my_orders() // Відображення замовлень юзера
     render_products() // Відображення продуктів
     render_wallets() // Отримання гаманців юзера
-    render_my_orders() // Відображення замовлень юзера
 })
 
 //--//Встановлюємо для поля select налаштування//--//
 select_user_wallets.select2({
     placeholder: 'Select your wallet',
     dropdownParent: $('#createProductModal'),
+    minimumResultsForSearch: -1,
+    width: '100%'
+})
+
+select_user_wallets_buy.select2({
+    placeholder: 'Select your wallet',
+    dropdownParent: $('#buyProductModal'),
     minimumResultsForSearch: -1,
     width: '100%'
 })
@@ -40,6 +48,7 @@ function render_wallets(){
                 let wallet = data[i]
                 let new_option = new Option(`${wallet.address} (${wallet.balance} ETH)`, wallet.id, false, false); // Новий option з даними гамнця
                 select_user_wallets.append(new_option).trigger('change'); // Додаємо option в select
+                select_user_wallets_buy.append(new_option).trigger('change')
 
             }
         }
@@ -95,8 +104,106 @@ function imageInBase64(image){
     })
 }
 
-function buy_product(data){
+//Очистка обраного гаманця після купівлі або просто вибору гаманця в модальному вікні
+$("#buyProductModal").on("hidden.bs.modal", function(){
+    console.log(select_user_wallets_buy)
+    $('#selectWalletsUser').val(null).trigger('change')
+});
+
+// Функція для купівлі продукту
+function buy_product(data) {
     console.log(data)
+    let button_buy = $('#buy_product') //  Отримуємо кнопку buy в модальному вікні
+    let product_modal = $('#buyProductModal') // Модальне вікно для buy
+    button_buy.off('click') // Очистка кнопки від минулих натиснень
+    product_modal.modal('show') // Відкриваємо вікно коли натиснули на buy в product
+
+    // Коли тиснемо на кнопку buy в модальному вікні
+    button_buy.on('click', function () {
+        let name_product = $('#product_' + data).text() // Отримуємо назву продукту
+        let price_product = $('#product_price_' + data).text() // Отримуємо ціну продукту
+        let user_wallet = select_user_wallets_buy.val() // Отримуємо значення поля select
+        let product_image = $('#product_image_' + data)[0].src
+        let date_buy = (new Date().toLocaleDateString(['en-US'], {
+            day: 'numeric',
+            month: 'numeric',
+            year: "2-digit"
+        }) + ', ' + new Date().toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+            }
+        )).replace(/\//g, '.'); // Отримуємо дату відправлення
+
+        if (!user_wallet) {
+            toastr.error('Оберіть гаманець', 'Error')
+            return;
+        }
+
+        $.ajax({
+            method: "POST",
+            dataType: 'json',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                'product_id': parseInt(data),
+                'wallet_id': parseInt(user_wallet)
+            }),
+            url: buy_product_url,
+            success: function (data) {
+                let add_order = `<div class="col my-auto">
+            <div class="row row-cols-2 m-3 border border-1 border-dark rounded">
+                <div class="col-3 image my-auto text-center">
+                    <img height="120px" width="50px;" src="${product_image}" alt="">
+                </div>
+                <div class="col-9 pe-5">
+                    <div class="d-flex ms-3 mt-4">
+                        <h5 class="m-0 p-0">Title:</h5>
+                        <p id="title_product" class="ms-2 my-auto">${name_product}</p>
+                    </div>
+                    <div class="d-flex ms-3 mt-2">
+                        <h5 class="m-0 p-0">Address:</h5>
+                        <a style="font-size: 10px;" href="https://sepolia.etherscan.io/tx/" class="ms-2 my-auto text-break"></a>
+                    </div>
+                    <div class="d-flex ms-3 mt-2">
+                        <h5 class="m-0 p-0">Price:</h5>
+                        <p class="ms-2 my-auto ">${price_product}</p>
+                    </div>
+                    <div class="d-flex ms-3 mt-2">
+                        <h5 class="m-0 p-0">Data:</h5>
+                        <p class="ms-2 my-auto">${date_buy}</p>
+                    </div>
+                    <div class="d-flex ms-3 mt-2">
+                        <h5 class="m-0 p-0">Status:</h5>
+                        <span class="badge bg-label-primary ms-1">New</span>
+                    </div>           
+                   <div class="d-flex ms-3 mt-2 mb-3">
+                        <h5 class="m-0 p-0">Turning:</h5>
+                        <p class="ms-2 my-auto"></p>
+                    </div>
+
+                </div>
+            </div>`
+                product_modal.modal('hide') // Закриваємо модальне вікно
+                order_user_block.append(add_order)
+
+                toastr.success('Success', 'Success')
+
+            },
+            error: function (data) {
+                console.log(data)
+                product_modal.modal('hide') // Закриваємо модальне вікно
+                toastr.error(data.responseJSON.detail, 'Error')
+            }
+        })
+
+        console.log(name_product)
+        console.log(price_product)
+        console.log(date_buy)
+        console.log(user_wallet)
+        console.log(product_image)
+    })
+
 }
 
 
@@ -177,7 +284,7 @@ function render_product(product){
     let new_product = `<div class="col my-auto">
                 <div class="row row-cols-2 m-3 border border-1 border-dark rounded">
                     <div class="col-3 image my-auto text-center">
-                        <img height="auto" width="50px;" src="${product.image}" alt="">
+                        <img id="product_image_${product.id}" height="auto" width="50px;" src="${product.image}" alt="">
                     </div>
                     <div class="col-9 pe-5">
                         <div class="d-flex ms-3 mt-4">
@@ -190,7 +297,7 @@ function render_product(product){
                         </div>
                         <div class="d-flex ms-3 mt-2">
                             <h5 class="m-0 p-0">Price:</h5>
-                            <p class="ms-2 my-auto ">${product.price}</p>
+                            <p id="product_price_${product.id}" class="ms-2 my-auto ">${product.price}</p>
                         </div>
                         <div class="text-start mt-2 mb-3">
                             <button onclick="buy_product(${product.id})" class="btn btn-primary waves-effect waves-light m-3 ">Buy product</button>
@@ -237,7 +344,7 @@ function render_order(order){
                         <h5 class="m-0 p-0">Status:</h5>
                         <span class="${get_status_option(order.status)}">${order.status}</span>
                     </div>           
-                   <div class="d-flex ms-3 mt-2 mb-2">
+                   <div class="d-flex ms-3 mt-2 mb-3">
                         <h5 class="m-0 p-0">Turning:</h5>
                         <p class="ms-2 my-auto">${turning(order.turning)}</p>
                     </div>

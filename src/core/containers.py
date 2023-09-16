@@ -22,8 +22,7 @@ class Container(containers.DeclarativeContainer):
 
 
     database = providers.Singleton(
-        Database,
-        db_url=settings.DATABASE_URI
+        Database
     )
 
     bunny_storage = providers.Singleton(

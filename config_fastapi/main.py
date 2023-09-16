@@ -1,26 +1,24 @@
-import socketio
-from dependency_injector.wiring import Provide
-from fastapi import FastAPI, Depends
-from propan import RabbitBroker
+
+from fastapi import FastAPI
+from sqladmin import Admin
 from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 
+from config.database import engine
 from config_fastapi import settings
 import src
+from src.core.adminAuth import authentication_backend
 
 from src.core.routers import routers
 from src.core.containers import Container
 from config_socketio.socket_application import socketio_app
-from src.parser.consumer import parser_broker_router
-from src.wallets.consumers import wallet_consumer
 
-# def create_broker() -> RabbitBroker:
-#     container = Container()
-#     broker = RabbitBroker("amqp://guest:guest@localhost:5672")
-#     broker.container = container
-#     return broker
+from src.wallets.admin import WalletAdmin, TransactionAdmin, BlockchainAdmin, AssetAdmin
+from src.users.admin import UserAdmin
+from src.ibay.admin import ProductAdmin
+from src.delivery.admin import OrderAdmin
+from src.chats.admin import MessageAdmin
 
-# broker = create_broker()
 
 def create_app() -> FastAPI:
     container = Container()
@@ -40,6 +38,18 @@ def create_app() -> FastAPI:
     )
     app.mount('/static/', StaticFiles(directory='static'), name='static')
     app.mount("/ws/", socketio_app)
+
+    admin = Admin(app, engine=engine, authentication_backend=authentication_backend)
+
+    admin.add_view(UserAdmin)
+    admin.add_view(WalletAdmin)
+    admin.add_view(BlockchainAdmin)
+    admin.add_view(AssetAdmin)
+    admin.add_view(TransactionAdmin)
+    admin.add_view(ProductAdmin)
+    admin.add_view(OrderAdmin)
+    admin.add_view(MessageAdmin)
+
 
     # @app.on_event('startup')
     # async def startup_app():

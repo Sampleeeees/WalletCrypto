@@ -39,8 +39,7 @@ async def my_order_product(request: Request,
 @ibay_router.post('/buy-product/', status_code=status.HTTP_200_OK)
 @inject
 async def buy_order_by_id(request: Request,
-                          product_id: int,
-                          wallet_id: int,
+                          item: schemas.BuyProduct,
                           ibay_service: IBayService = Depends(Provide[Container.ibay_service]),
                           permission: Permission = Depends(Provide[Container.permission]),
                           wallet_service: WalletService = Depends(Provide[Container.wallet_service]),
@@ -48,8 +47,8 @@ async def buy_order_by_id(request: Request,
     """Купівля продукту"""
     user = await permission.get_current_user(request)
     if user:
-        product = await ibay_service.get_product_by_id(order_id=product_id) # Отримання продукту по його id
-        wallet_user = await wallet_service.get_wallets_user(user_id=user.id, wallet_id=wallet_id) # Отримання валета юзера по id
+        product = await ibay_service.get_product_by_id(order_id=item.product_id) # Отримання продукту по його id
+        wallet_user = await wallet_service.get_wallets_user(user_id=user.id, wallet_id=item.wallet_id) # Отримання валета юзера по id
 
         # Якщо продукту під таким id немає то виводим помилку
         if not product:
@@ -72,9 +71,10 @@ async def buy_order_by_id(request: Request,
         txn_hash = await wallet_service.send_transaction(item=transaction_dict) # Отримання хешу від відправленої транзакції
         transaction_id = await wallet_service.get_transaction_in_db(txn_hash) # Отримання id транзакції яка була створена
 
-        delivery_dict = delivery_schemas.OrderCreate(product_id=product_id, transaction_id=transaction_id.id) # Запис даних в схемиу для створення замовлення
-        await delivery_service.create_order(delivery_dict) # Створення замовлення
-        return txn_hash
+        delivery_dict = delivery_schemas.OrderCreate(product_id=item.product_id, transaction_id=transaction_id.id) # Запис даних в схемиу для створення замовлення
+        order = await delivery_service.create_order(delivery_dict) # Створення замовлення
+        return {'id': order.id,
+                'hash': txn_hash}
 
 @ibay_router.post('/product/', status_code=status.HTTP_200_OK)
 @inject

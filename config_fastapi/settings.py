@@ -37,6 +37,7 @@ APPS_SERVICE =[
     'config_celery.tasks',
     'config_propan',
     'config_socketio',
+    'src.core',
     'src.authentication',
     'src.chats',
     'src.delivery',

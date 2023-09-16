@@ -1,6 +1,4 @@
-const socket = io('ws://127.0.0.1:8000', {path: '/ws/socket.io'});
 const latest_message = window.location.origin + "/api/v1/messages/"
-const user_cookie = document.cookie
 const block_message = $('#block_message')
 const chat_history = $('#chat_history')
 const insert_image = $('#insert_image_chat')[0]
@@ -18,12 +16,6 @@ $(document).ready(function (){
 
 })
 
-
-socket.on('connect', () => {
-    console.log('connected')
-    socket.emit('test', user_cookie)
-
-})
 
 // Функція для відображення списку онлайн користувачів
 function updateUsersList(users) {
@@ -61,10 +53,6 @@ socket.on('transaction', (data) => {
     toastr.success(`${data}`, 'Hello')
 })
 
-
-socket.on('disconnect', () => {
-    console.log('disconnect')
-})
 
 
 function get_image(image){

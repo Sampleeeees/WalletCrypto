@@ -1,9 +1,27 @@
 const logout_user_user = window.location.origin + "/api/v1/logout/"
 const user_basic_profile_url = window.location.origin + "/api/v1/user/profile/"
+
+const socket = io('ws://127.0.0.1:8000', {path: '/ws/socket.io'});
+const user_cookie = document.cookie
+
 const header_basic_avatar = $("#header_avatar")
 const basic_dropdown_image = $('#dropdown_image')
 const user_basic_nickname = $('#user_basic_username')
 const user_id = $('#user_id')
+
+
+
+
+
+socket.on('connect', () => {
+    console.log('connected')
+    socket.emit('test', user_cookie)
+
+})
+
+socket.on('disconnect', () => {
+    console.log('disconnect')
+})
 
 window.addEventListener('load', () => {
     const loader = document.querySelector('.loader');

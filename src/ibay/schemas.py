@@ -5,6 +5,10 @@ from pydantic import BaseModel, field_validator
 from src.authentication.exceptions import BadRequestException
 
 
+class BuyProduct(BaseModel):
+    product_id: int
+    wallet_id: int
+
 class ProductCreate(BaseModel):
     """Схема для створення продукту"""
     name: str
