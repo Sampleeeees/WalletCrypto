@@ -23,7 +23,7 @@ class Order(Base):
     product_id = Column(Integer, ForeignKey('product.id'))
     transaction_id = Column(Integer, ForeignKey('transaction.id'))
 
-    #product: Mapped["Product"] = relationship(back_populates="orders")
+    product = relationship('Product', back_populates="orders")
     transaction = relationship('Transaction', back_populates="orders")
 
 

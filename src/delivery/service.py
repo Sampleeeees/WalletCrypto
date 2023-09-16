@@ -11,6 +11,8 @@ from config_celery.requests_google import fetch
 from config_fastapi import settings
 from src.delivery import schemas
 from src.delivery.models import Order, StatusOrder
+from src.ibay.models import Product
+from src.wallets.models import Wallet
 
 
 class DeliveryService:
@@ -29,6 +31,18 @@ class DeliveryService:
             await db.refresh(order)
             return order
 
+    async def get_all_my_product(self, user_id: int):
+        async with self.session_factory() as db:
+            query = (
+                select(Order)
+                .join(Product, Order.product_id == Product.id)
+                .where(Product.wallet.has(Wallet.user_id == user_id))
+                .options(joinedload(Order.product))  # Завантажуємо пов'язаний продукт (optional)
+                .options(joinedload(Order.transaction))  # Завантажуємо пов'язаний продукт (optional)
+            )
+
+            results = await db.execute(query)
+            return results.scalars().all()
 
     # Оновлення замовлення. Юзається коли парсер ловить транзакцію і знаходить її в ордер таблиці
     async def update_product(self, txn_id: int, status: bool):

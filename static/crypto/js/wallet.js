@@ -15,8 +15,7 @@ $(document).ready(function (){
 
 //--//Очиска вмісту модалки коли вона закривається//--//
 $('#watchTransactionsModal').on('hidden.bs.modal', function () {
-    // Очистіть вміст таблиці
-    $('#transaction_body').empty();
+    $('#transaction_body').empty(); // Очистка вмісту таблиці
 });
 
 

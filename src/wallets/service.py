@@ -128,8 +128,8 @@ class WalletService:
                 await db.commit()
                 await db.refresh(wallet)
                 return wallet
-            except Exception:
-                raise HTTPException(detail='Не вийшло імпортувати гаманець. Схоже ви ввели невірний приватний ключ', status_code=status.HTTP_400_BAD_REQUEST)
+            except Exception as exp:
+                raise HTTPException(detail=f'Не вийшло імпортувати гаманець. Схоже ви ввели невірний приватний ключ. {exp}', status_code=status.HTTP_400_BAD_REQUEST)
 
     # Отримання балансу з гаманця
     async def get_balance(self, item: schemas.CheckBalance) -> Optional[Wallet]:

@@ -1,7 +1,7 @@
 import enum
 from typing import List
 
-from sqlalchemy import Integer, String, Column, Numeric, DateTime, Enum, ForeignKey
+from sqlalchemy import Integer, String, Column, Numeric, DateTime, Enum, ForeignKey, Float
 from sqlalchemy.orm import relationship, Mapped
 from sqlalchemy_utils import URLType
 
@@ -53,7 +53,7 @@ class Wallet(Base):
     # table fields
     id = Column(Integer, primary_key=True, autoincrement=True)
     address = Column(String)
-    balance = Column(Numeric, default=0)
+    balance = Column(Float, default=0)
     private_key = Column(String)
     user_id = Column(Integer, ForeignKey('users.id'))
 
@@ -74,9 +74,9 @@ class Transaction(Base):
     hash = Column(String(length=250))
     from_send = Column(String(length=250))
     to_send = Column(String(length=250))
-    value = Column(Numeric)
+    value = Column(Float)
     date_send = Column(DateTime)
-    txn_fee = Column(Numeric)
+    txn_fee = Column(Float)
     status = Column(Enum(TransactionStatus))
 
     orders = relationship("Order", back_populates='transaction')

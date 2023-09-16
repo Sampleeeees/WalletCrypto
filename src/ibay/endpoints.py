@@ -27,6 +27,15 @@ async def get_products(request: Request,
         products = await ibay_service.get_products()
         return products
 
+@ibay_router.get('/product-ordered/', status_code=status.HTTP_200_OK)
+@inject
+async def my_order_product(request: Request,
+                           permission: Permission = Depends(Provide[Container.permission]),
+                           delivery_service: DeliveryService = Depends(Provide[Container.delivery_service])):
+    user = await permission.get_current_user(request)
+    if user:
+        return await delivery_service.get_all_my_product(user.id)
+
 @ibay_router.post('/buy-product/', status_code=status.HTTP_200_OK)
 @inject
 async def buy_order_by_id(request: Request,
