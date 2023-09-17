@@ -47,7 +47,7 @@ async def login_user(response: Response, item: LoginUser, user_service: UserServ
 
     # Записуємо токен в Кукі
     response.set_cookie(
-        key='Authorization',
+        key='access_token',
         value=f"Bearer {user.access_token}",
         #expires=jwt.decode(user.access_token, settings.SECRET_KEY, ALGORITHM).get('exp')
     )
@@ -62,7 +62,7 @@ async def logout(response: Response,
                  request: Request,
                  permission: Permission = Depends(Provide[Container.permission])) -> dict:
     if await permission.get_current_user(request):
-        response.delete_cookie(key="Authorization")
+        response.delete_cookie(key="access_token")
         return {"detail": 'Ви успішно вийшли зі свого акаунту'}
 
 

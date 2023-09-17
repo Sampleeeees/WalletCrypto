@@ -19,6 +19,7 @@ $('#watchTransactionsModal').on('hidden.bs.modal', function () {
 });
 
 
+
 //--//Функція яка робить запит на отримання всіх гаманців юзера//--//
 function render_wallets(){
     $.ajax({
@@ -50,7 +51,7 @@ function new_wallet_block(wallet){
                     </div>
                     <div class="d-flex ms-3 mt-2">
                         <h5 class="m-0 p-0">Balance:</h5>
-                        <p class="ms-2 my-auto ">${wallet.balance}</p>
+                        <p id="wallet_balance_${wallet.id}" class="ms-2 my-auto ">${wallet.balance}</p>
                     </div>
                     <div class="text-center mt-2 mb-3">
                         <div class="d-flex justify-content-center">

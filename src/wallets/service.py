@@ -10,6 +10,7 @@ from fastapi import HTTPException
 from propan import RabbitBroker
 from sqlalchemy import select, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 from starlette import status
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
@@ -49,6 +50,15 @@ class WalletService:
         async with self.session_factory() as db:
             result = await db.execute(select(Wallet))
             return result.scalars().all()
+
+    async def get_user_by_wallet_address(self, address: str):
+        async with self.session_factory() as db:
+            result = await db.execute(select(Wallet)
+                                    .options(joinedload(Wallet.user))
+                                    .where(Wallet.address == address))
+            wallet = result.scalar_one_or_none()
+            if wallet:
+                return wallet.user.id
 
     # отримання гаманця по адресі
     async def get_wallet_by_address(self, address: str):

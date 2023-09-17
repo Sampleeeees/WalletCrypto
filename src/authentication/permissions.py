@@ -19,7 +19,7 @@ class JWTBearerCookie(OAuth2):
     """Клас для первірки access_token в cookies"""
     def __call__(self, request: Request) -> Optional[str]:
         print('Hello')
-        cookie_authorization = request.cookies.get('Authorization')
+        cookie_authorization = request.cookies.get('access_token')
         token_type, access_token = get_authorization_scheme_param(cookie_authorization)
         print("Token type", token_type, 'access', access_token)
         if token_type.lower() != 'bearer':
@@ -39,7 +39,7 @@ class Permission:
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-        cookie_authorization = request.cookies.get('Authorization')
+        cookie_authorization = request.cookies.get('access_token')
         if cookie_authorization is None:
             raise HTTPException(
                 status_code=HTTP_403_FORBIDDEN, detail="Not authenticated"
@@ -65,7 +65,7 @@ class Permission:
         return user
 
     async def get_token_bearer(self, request: Request):
-        cookie_authorization = request.cookies.get('Authorization')
+        cookie_authorization = request.cookies.get('access_token')
         if cookie_authorization is None:
             return False
         return True

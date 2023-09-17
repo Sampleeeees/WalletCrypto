@@ -1,37 +1,29 @@
 import asyncio
+import os
+import sys
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import socketio
+from dependency_injector.wiring import inject, Provide
+from propan import RabbitBroker
+
+from config_fastapi import settings
+from src.core.containers import Container
+from src.parser.service import ParserService
 
 
-sio_client = socketio.AsyncClient()
+@inject
+async def parse_block(parser_service: ParserService = Provide[Container.parser_service]):
+    while True:
+        block_number = await parser_service.get_latest_block()
+        if block_number is not None:
+    # for i in range(2):
+            async with RabbitBroker(settings.RABBITMQ_URI) as broker:
+                await broker.publish(message=block_number, queue='parser/parser_queue')
 
 
-@sio_client.event
-async def connect():
-    print('connection established')
-
-@sio_client.event
-async def my_message(data):
-    print('message received with ', data)
-
-@sio_client.on('event')
-async def handler_event(data):
-    print('I read you data')
-
-@sio_client.event
-async def disconnect():
-    print('disconnected from server')
-
-
-
-# async def main():
-#     await sio_client.connect('http://127.0.0.1:8001')
-#     await sio_client.emit('parsing', 'test')
-#     await sio_client.wait()
-#     # await sio_client.emit('event', 'Hello')
-#     # await sio_client.emit('testing', 'Woah')
-#
-#     #await sio_client.wait()
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    container = Container()
+    container.wire(['__main__'])
+    asyncio.run(parse_block())

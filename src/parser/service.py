@@ -92,7 +92,7 @@ class ParserService:
 
         for processed_txn in processed_transactions:
             if processed_txn['from'] in my_wallet_from:
-                async with RabbitBroker(settings.RABBITMQ_URI) as broker:
+                async with RabbitBroker() as broker:
                     await broker.publish(message={"type": "create_or_update", "data": processed_txn['hash'].hex()},
                                          queue="wallet/wallet_queue")
                 async with RabbitBroker() as broker:
@@ -101,10 +101,20 @@ class ParserService:
                                                   "value": processed_txn['value'],
                                                   "action": 'from'
                                                   },queue='wallet/wallet_queue')
-                await fastapi_mgr.emit('my_message', data={'message': 'You send transaction'})
+
+                async with RabbitBroker() as broker:
+                    await broker.publish(message={"type": "send_notification",
+                                                  "txn_hash": processed_txn['hash'].hex(),
+                                                  "address": processed_txn['from'],
+                                                  "operation": "send",
+                                                  "value": processed_txn["value"],
+                                                  "message": f'З гаманця знято {processed_txn["value"]} Eth'},
+                                                  queue='wallet/wallet_queue')
+
+
 
             elif processed_txn['to'] in my_wallet_to:
-                async with RabbitBroker(settings.RABBITMQ_URI) as broker:
+                async with RabbitBroker() as broker:
                     await broker.publish(message={"type": "create_or_update", "data": processed_txn['hash'].hex()},
                                          queue='wallet/wallet_queue')
                 async with RabbitBroker() as broker:
@@ -113,7 +123,14 @@ class ParserService:
                                                   "value": processed_txn['value'],
                                                   "action": 'to'
                                                   },queue='wallet/wallet_queue')
-                await fastapi_mgr.emit('my_message', data={'message': 'You get transaction'})
+                async with RabbitBroker() as broker:
+                    await broker.publish(message={"type": "send_notification",
+                                                  "txn_hash": processed_txn['hash'].hex(),
+                                                  "address": processed_txn['to'],
+                                                  "operation": "get",
+                                                  "value": processed_txn["value"],
+                                                  "message": f'На гаманець прийшло {processed_txn["value"]} Eth'},
+                                         queue='wallet/wallet_queue')
 
         return my_wallet_from, my_wallet_to
 

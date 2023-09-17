@@ -1,8 +1,11 @@
 import jwt
 import socketio
+from propan import RabbitBroker
+
 from config_fastapi import settings
 from dependency_injector.wiring import inject, Provide
 
+from config_fastapi.fastapi_manager import fastapi_mgr
 from src.chats.service import ChatService
 from src.core.containers import Container
 from src.core.storage_bunny import BunnyStorage
@@ -12,12 +15,13 @@ from src.users.service import UserService
 mgr = socketio.AsyncAioPikaManager(settings.RABBITMQ_URI)
 sio = socketio.AsyncServer(client_manager=mgr, async_mode='asgi', cors_allowed_origins="*", logger=True)
 
+
 online_users = {}
 
 # Отримання з кукісів токен
 async def get_token(cookies: list):
     for cookie in cookies:
-        if cookie.startswith('Authorization='):
+        if cookie.startswith('access_token='):
             return cookie.split(' ')[1].strip('"')
 
 
@@ -45,6 +49,7 @@ async def connect(sid, environ, user_service: UserService = Provide[Container.us
     room_name = f"user_{user_id}"
     sio.enter_room(sid, room_name)
 
+
     async with sio.session(sid) as session:
         session['user_id'] = user_id
         session['avatar'] = await user_service.get_image_by_user_id(user_id)
@@ -56,6 +61,8 @@ async def connect(sid, environ, user_service: UserService = Provide[Container.us
     print(user_id)
     # user = await user_service.get_user(user_id=user_id)
     # print('USer', user)
+
+
 
 
 @sio.on('my_message')
@@ -73,11 +80,8 @@ async def my_message(sid, data,
         await sio.emit('message', {'message': data["message"], 'image': image_url, 'user_id': session['user_id'], 'avatar': session['avatar'], 'username': session['username']})
 
 
-@sio.on('fastapi')
-async def conn_fastapi(sid, data):
-    print('HI FASTAPI')
 
-# @sio.on('parsing')
+# @sio.on('parse_block')
 # @inject
 # async def parse_block(sid, data, parser_service: ParserService = Provide[Container.parser_service]):
 #     while True:
@@ -85,8 +89,6 @@ async def conn_fastapi(sid, data):
 #         if block_number is not None:
 #             async with RabbitBroker(settings.RABBITMQ_URI) as broker:
 #                 await broker.publish(message=block_number, queue='parser/parser_queue')
-
-
 
 @sio.on('get_balance')
 async def get_balance(sid, data):

@@ -2,21 +2,36 @@ const logout_user_user = window.location.origin + "/api/v1/logout/"
 const user_basic_profile_url = window.location.origin + "/api/v1/user/profile/"
 
 const socket = io('ws://127.0.0.1:8000', {path: '/ws/socket.io'});
-const user_cookie = document.cookie
 
 const header_basic_avatar = $("#header_avatar")
 const basic_dropdown_image = $('#dropdown_image')
 const user_basic_nickname = $('#user_basic_username')
 const user_id = $('#user_id')
 
+let eventSent = false;
 
 
 
 
 socket.on('connect', () => {
     console.log('connected')
-    socket.emit('test', user_cookie)
+})
 
+socket.on('txn_notification', (data) => {
+    console.log(data)
+    let wallet = $('#wallet_balance_'+ data.wallet_id)
+    let wallet_balance = wallet.text()
+    console.log("Balance:",wallet_balance)
+    console.log(wallet)
+    if (data.operation === 'send'){
+        toastr.info(`${data.message}.<br> <p style="font-size: 12px;">${data.address}</p> <br> <a style="font-size: 12px;" href="https://sepolia.etherscan.io/tx/${data.txn_hash}">Посилання на транзакцію</a>`)
+        let new_balance = parseFloat(wallet_balance) - 1
+        wallet.text(new_balance)
+    }else if(data.operation === 'get'){
+        toastr.info(`${data.message}.<br> <p style="font-size: 12px;">${data.address}</p> <br> <a style="font-size: 12px;" href="https://sepolia.etherscan.io/tx/${data.txn_hash}">Посилання на транзакцію</a>`)
+        let new_balance = parseFloat(wallet_balance) + data.value
+        wallet.text(new_balance)
+    }
 })
 
 socket.on('disconnect', () => {
