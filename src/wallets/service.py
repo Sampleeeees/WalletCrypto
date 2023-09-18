@@ -285,9 +285,9 @@ class WalletService:
                 if wallet.balance is None:
                     wallet.balance = 0
                 if action == 'from':
-                    wallet.balance -= (Decimal(value) / (int("1" + ("0" * asset.decimal_places))))
+                    wallet.balance -= (value) / (int("1" + ("0" * asset.decimal_places)))
                 elif action == 'to':
-                    wallet.balance += (Decimal(value) / (int("1" + ("0" * asset.decimal_places))))
+                    wallet.balance += (value) / (int("1" + ("0" * asset.decimal_places)))
                 db.add(wallet)
                 await db.commit()
                 await db.refresh(wallet)

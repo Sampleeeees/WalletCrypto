@@ -17,21 +17,24 @@ socket.on('connect', () => {
     console.log('connected')
 })
 
-socket.on('txn_notification', (data) => {
+socket.on('send_txn', (data) => {
     console.log(data)
     let wallet = $('#wallet_balance_'+ data.wallet_id)
     let wallet_balance = wallet.text()
     console.log("Balance:",wallet_balance)
-    console.log(wallet)
-    if (data.operation === 'send'){
-        toastr.info(`${data.message}.<br> <p style="font-size: 12px;">${data.address}</p> <br> <a style="font-size: 12px;" href="https://sepolia.etherscan.io/tx/${data.txn_hash}">Посилання на транзакцію</a>`)
-        let new_balance = parseFloat(wallet_balance) - 1
-        wallet.text(new_balance)
-    }else if(data.operation === 'get'){
-        toastr.info(`${data.message}.<br> <p style="font-size: 12px;">${data.address}</p> <br> <a style="font-size: 12px;" href="https://sepolia.etherscan.io/tx/${data.txn_hash}">Посилання на транзакцію</a>`)
-        let new_balance = parseFloat(wallet_balance) + data.value
-        wallet.text(new_balance)
-    }
+    console.log(wallet, wallet_balance)
+    toastr.info(`${data.message}.<br> <p style="font-size: 12px;">${data.address}</p> <br> <a style="font-size: 12px;" href="https://sepolia.etherscan.io/tx/${data.txn_hash}">Посилання на транзакцію</a>`)
+    let new_balance = parseFloat(wallet_balance) - data.value
+    wallet.text(new_balance.toFixed(3))
+})
+
+socket.on('get_txn', (data) => {
+    console.log('GET', data)
+    let wallet = $('#wallet_balance_'+ data.wallet_id)
+    let wallet_balance = wallet.text()
+    toastr.info(`${data.message}.<br> <p style="font-size: 12px;">${data.address}</p> <br> <a style="font-size: 12px;" href="https://sepolia.etherscan.io/tx/${data.txn_hash}">Посилання на транзакцію</a>`)
+    let new_balance = parseFloat(wallet_balance) + data.value
+    wallet.text(new_balance.toFixed(3))
 })
 
 socket.on('disconnect', () => {

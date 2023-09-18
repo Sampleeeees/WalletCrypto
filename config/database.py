@@ -8,9 +8,9 @@ from sqlalchemy.orm import DeclarativeBase
 from config_fastapi import settings
 
 logger = logging.getLogger(__name__)
-engine = create_async_engine(settings.DATABASE_URI, echo=True, future=True)
+engine = create_async_engine(settings.DATABASE_URI, echo=True, future=True) # engine для sqladmin
 
-
+# Клас який буде використовуватися при створені моделей
 class Base(AsyncAttrs, DeclarativeBase):
     pass
 

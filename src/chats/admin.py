@@ -3,6 +3,7 @@ from sqladmin import ModelView
 from .models import Message
 
 class MessageAdmin(ModelView, model=Message):
+    """Admin модель для керування даними"""
     name = 'Message'
     name_plural = 'Messages'
     icon = 'fa fa-comments'

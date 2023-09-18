@@ -20,7 +20,8 @@ auth_router = APIRouter()
 
 @auth_router.post("/registration/", status_code=status.HTTP_201_CREATED, response_description="Successfully Registration", response_model=UserRegistration)
 @inject
-async def registration(item: UserRegistration, user_service: UserService = Depends(Provide[Container.user_service])):
+async def registration(item: UserRegistration,
+                       user_service: UserService = Depends(Provide[Container.user_service])) -> JSONResponse:
     """Endpoint для реєстрації користувача"""
     user = await user_service.create_user(item)
 
@@ -42,7 +43,10 @@ async def registration(item: UserRegistration, user_service: UserService = Depen
 
 @auth_router.post("/login/", status_code=status.HTTP_200_OK)
 @inject
-async def login_user(response: Response, item: LoginUser, user_service: UserService = Depends(Provide[Container.user_service])) -> dict:
+async def login_user(response: Response,
+                     item: LoginUser,
+                     user_service: UserService = Depends(Provide[Container.user_service])) -> dict:
+    """Авторизація користувача"""
     user = await user_service.authorization(item)
 
     # Записуємо токен в Кукі
@@ -61,6 +65,7 @@ async def login_user(response: Response, item: LoginUser, user_service: UserServ
 async def logout(response: Response,
                  request: Request,
                  permission: Permission = Depends(Provide[Container.permission])) -> dict:
+    """Logout користувача"""
     if await permission.get_current_user(request):
         response.delete_cookie(key="access_token")
         return {"detail": 'Ви успішно вийшли зі свого акаунту'}

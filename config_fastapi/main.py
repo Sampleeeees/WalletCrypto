@@ -6,7 +6,6 @@ from starlette.staticfiles import StaticFiles
 
 from config.database import engine
 from config_fastapi import settings
-import src
 from src.core.adminAuth import authentication_backend
 
 from src.core.routers import routers
@@ -19,7 +18,7 @@ from src.ibay.admin import ProductAdmin
 from src.delivery.admin import OrderAdmin
 from src.chats.admin import MessageAdmin
 
-
+# функція дя створення fastapi та підключення wiring container для dependency_injector
 def create_app() -> FastAPI:
     container = Container()
 
@@ -28,7 +27,7 @@ def create_app() -> FastAPI:
     app.container = container
     # broker.container = container
 
-    app.include_router(src.core.routers.routers)
+    app.include_router(routers)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.ORIGINS,
@@ -36,11 +35,14 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"]
     )
+    # Підключення статики та вебсокету до fastapi
     app.mount('/static/', StaticFiles(directory='static'), name='static')
     app.mount("/ws/", socketio_app)
 
+    # Стоврення адмінки sqladmin
     admin = Admin(app, engine=engine, authentication_backend=authentication_backend)
 
+    # Підключення класів моделей для адміністрування
     admin.add_view(UserAdmin)
     admin.add_view(WalletAdmin)
     admin.add_view(BlockchainAdmin)

@@ -13,12 +13,14 @@ logger = logging.getLogger(__name__)
 # def setup_periodic_tasks(sender, **kwargs):
 #     sender.add_periodic_task(5.0, random_delivery.s())
 
+# Таска для парсингу блоку за його номером
 @app.task(max_retries=3, retry_backoff=True)
 @inject
 def parse_block(block_number, parser_service: ParserService = Provide[Container.parser_service]):
     loop = asyncio.get_event_loop()
     return loop.run_until_complete(parser_service.parsing_block(block_number))
 
+# Таска для закриття delivery продукту
 @app.task(ignore_result=True)
 @inject
 def random_delivery(delivery_service: DeliveryService = Provide[Container.delivery_service]):

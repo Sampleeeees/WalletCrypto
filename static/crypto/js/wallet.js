@@ -51,7 +51,7 @@ function new_wallet_block(wallet){
                     </div>
                     <div class="d-flex ms-3 mt-2">
                         <h5 class="m-0 p-0">Balance:</h5>
-                        <p id="wallet_balance_${wallet.id}" class="ms-2 my-auto ">${wallet.balance}</p>
+                        <p id="wallet_balance_${wallet.id}" class="ms-2 my-auto ">${(wallet.balance).toFixed(3)} ETH</p>
                     </div>
                     <div class="text-center mt-2 mb-3">
                         <div class="d-flex justify-content-center">
@@ -163,7 +163,7 @@ function get_wallet_transaction(wallet_id){
             let table_head = $('#transaction_head')
             if (data.length !== 0){
                 $('#watchTransactionsModal').modal('show');
-                for(let i in data){
+                for(let i = data.length - 1; i >= 0; i--){
                 let txn = data[i]
                 let new_transaction = `<tr>
                         <td title="${txn.hash}" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">

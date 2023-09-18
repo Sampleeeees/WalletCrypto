@@ -2,11 +2,13 @@ from celery import Celery
 
 from config_fastapi import settings
 
+# Створення celery
 app = Celery('config_celery',
              broker=settings.RABBITMQ_URI,
              backend='rpc://',
              include=['config_celery.tasks'])
 
+# Налаштування для celery
 app.conf.update(
     CELERY_TASK_SERIALIZER='json',
     CELERY_RESULT_SERIALIZER='json',

@@ -55,6 +55,7 @@ async def create_wallet(request: Request,
     if user:
         return await wallet_service.create_wallet(user_id=user.id)
 
+
 @wallet_router.post('/wallet/import/', status_code=status.HTTP_200_OK, response_model=schemas.WalletList)
 @inject
 async def import_wallet(item: schemas.WalletImport,
@@ -64,7 +65,10 @@ async def import_wallet(item: schemas.WalletImport,
     """Імпортування гаманця за допомогою приватного ключа"""
     user = await permission.get_current_user(request)
     if user:
-        return await wallet_service.import_wallet(item.private_key, user.id)
+        wallet = await wallet_service.import_wallet(item.private_key, user.id)
+        address = schemas.CheckBalance(address=wallet.address)
+        await wallet_service.get_balance(address)
+        return wallet
 
 @wallet_router.get('/wallet/transactions/{address}', status_code=status.HTTP_200_OK)
 @inject

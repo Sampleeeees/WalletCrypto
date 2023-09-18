@@ -4,7 +4,7 @@ from socketio import ASGIApp
 from config_socketio.server import sio
 from src.core.containers import Container
 
-
+# функція для стоврення asgi app ля сокету та оголошення контейнеру для використання
 def create_socket_app() -> ASGIApp:
     container=Container()
 

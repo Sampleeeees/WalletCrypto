@@ -19,6 +19,11 @@ $(window).on('load', function (){
     render_wallets() // Отримання гаманців юзера
 })
 
+
+socket.on('update_product', (data) => {
+    console.log('Updating product', data.id)
+})
+
 //--//Встановлюємо для поля select налаштування//--//
 select_user_wallets.select2({
     placeholder: 'Select your wallet',

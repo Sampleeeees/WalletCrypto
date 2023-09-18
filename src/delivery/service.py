@@ -73,11 +73,10 @@ class DeliveryService:
                             # Відправка даних для транзакціх з поверненням комісії * 1.5
                             async with RabbitBroker(settings.RABBITMQ_URI) as broker:
                                 new_transaction_id = await broker.publish(
-                                    message={'type': 'turning',
-                                             'from_send': order.transaction.from_send,
+                                    message={'from_send': order.transaction.from_send,
                                              'to_send': order.transaction.to_send,
                                              'value': order.transaction.txn_fee * 1.5},
-                                    queue='wallet/wallet_queue',
+                                    queue='wallet/wallet_turning',
                                     callback=True)
                                 order.transaction_id = new_transaction_id
                     # Якщо транзакція все таки не пройшла
@@ -85,11 +84,10 @@ class DeliveryService:
                         order.status = StatusOrder.failed
                         async with RabbitBroker(settings.RABBITMQ_URI) as broker:
                             new_transaction_id = await broker.publish(
-                                message={'type': 'turning',
-                                         'from_send': order.transaction.from_send,
+                                message={'from_send': order.transaction.from_send,
                                          'to_send': order.transaction.to_send,
                                          'value': order.transaction.txn_fee * 1.5},
-                                queue='wallet/wallet_queue',
+                                queue='wallet/wallet_turning',
                                 callback=True)
                             order.transaction_id = new_transaction_id
                 db.add(order)
@@ -117,11 +115,10 @@ class DeliveryService:
                     last_order.status = StatusOrder.failed
                     async with RabbitBroker(settings.RABBITMQ_URI) as broker:
                         new_transaction_id = await broker.publish(
-                            message={'type': 'turning',
-                                     'from_send': last_order.transaction.from_send,
+                            message={'from_send': last_order.transaction.from_send,
                                      'to_send': last_order.transaction.to_send,
                                      'value': last_order.transaction.txn_fee * 1.5},
-                            queue='wallet/wallet_queue',
+                            queue='wallet/wallet_turning',
                             callback=True)
                         last_order.transaction_id = new_transaction_id
                 await db.commit()

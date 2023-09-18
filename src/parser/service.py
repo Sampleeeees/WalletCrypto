@@ -91,46 +91,39 @@ class ParserService:
                                                                                to_send=to_address)
 
         for processed_txn in processed_transactions:
+            value = (processed_txn["value"] / (int("1" + ("0" * 18))))
             if processed_txn['from'] in my_wallet_from:
                 async with RabbitBroker() as broker:
-                    await broker.publish(message={"type": "create_or_update", "data": processed_txn['hash'].hex()},
-                                         queue="wallet/wallet_queue")
+                    await broker.publish(message={"data": processed_txn['hash'].hex()},
+                                         queue="wallet/wallet_create_update")
                 async with RabbitBroker() as broker:
-                    await broker.publish(message={"type": "balance_operation",
-                                                  "address": processed_txn['from'],
+                    await broker.publish(message={"address": processed_txn['from'],
                                                   "value": processed_txn['value'],
                                                   "action": 'from'
-                                                  },queue='wallet/wallet_queue')
+                                                  },queue='wallet/wallet_balance')
 
                 async with RabbitBroker() as broker:
-                    await broker.publish(message={"type": "send_notification",
-                                                  "txn_hash": processed_txn['hash'].hex(),
+                    await broker.publish(message={"txn_hash": processed_txn['hash'].hex(),
                                                   "address": processed_txn['from'],
-                                                  "operation": "send",
-                                                  "value": processed_txn["value"],
-                                                  "message": f'З гаманця знято {processed_txn["value"]} Eth'},
-                                                  queue='wallet/wallet_queue')
+                                                  "value": value,
+                                                  "message": f'З гаманця знято {value} Eth'},
+                                                  queue='wallet/wallet_send_from_notification')
 
-
-
-            elif processed_txn['to'] in my_wallet_to:
+            if processed_txn['to'] in my_wallet_to:
                 async with RabbitBroker() as broker:
-                    await broker.publish(message={"type": "create_or_update", "data": processed_txn['hash'].hex()},
-                                         queue='wallet/wallet_queue')
+                    await broker.publish(message={"data": processed_txn['hash'].hex()},
+                                         queue='wallet/wallet_create_update')
                 async with RabbitBroker() as broker:
-                    await broker.publish(message={"type": "balance_operation",
-                                                  "address": processed_txn['from'],
+                    await broker.publish(message={"address": processed_txn['to'],
                                                   "value": processed_txn['value'],
                                                   "action": 'to'
-                                                  },queue='wallet/wallet_queue')
+                                                  },queue='wallet/wallet_balance')
                 async with RabbitBroker() as broker:
-                    await broker.publish(message={"type": "send_notification",
-                                                  "txn_hash": processed_txn['hash'].hex(),
+                    await broker.publish(message={"txn_hash": processed_txn['hash'].hex(),
                                                   "address": processed_txn['to'],
-                                                  "operation": "get",
-                                                  "value": processed_txn["value"],
-                                                  "message": f'На гаманець прийшло {processed_txn["value"]} Eth'},
-                                         queue='wallet/wallet_queue')
+                                                  "value": value,
+                                                  "message": f'На гаманець прийшло {value} Eth'},
+                                         queue='wallet/wallet_send_to_notification')
 
         return my_wallet_from, my_wallet_to
 
