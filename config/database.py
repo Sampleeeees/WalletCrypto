@@ -24,8 +24,12 @@ class LastSuccessBlock(Base):
 
 class Database:
     """Клас для підключення до бази даних та отримання сесії"""
-    def __init__(self) -> None:
-        self._session_factory = async_sessionmaker(engine, autoflush=False, expire_on_commit=False)
+    def __init__(self, db_url=None) -> None:
+        if db_url:
+            self.engine = create_async_engine(db_url, echo=True, future=True)
+            self._session_factory = async_sessionmaker(self.engine, autoflush=False, expire_on_commit=False)
+        else:
+            self._session_factory = async_sessionmaker(engine, autoflush=False, expire_on_commit=False)
 
     # Отримання сесії
     @asynccontextmanager

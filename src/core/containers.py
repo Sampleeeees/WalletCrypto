@@ -33,6 +33,12 @@ class Container(containers.DeclarativeContainer):
         storage_region=settings.BUNNY_STORAGE_REGION
     )
 
+    web3_service = providers.Factory(
+        Web3Service,
+        provider_url=settings.INFURA_URI,
+        http_provider_url=settings.INFURA_URI_HTTP,
+    )
+
     moralis_service = providers.Singleton(
         MoralisService,
         api_key=settings.MORALIS_API_KEY
@@ -51,11 +57,6 @@ class Container(containers.DeclarativeContainer):
         http_provider_url=settings.INFURA_URI_HTTP
     )
 
-    web3_service = providers.Factory(
-        Web3Service,
-        provider_url=settings.INFURA_URI,
-        http_provider_url=settings.INFURA_URI_HTTP,
-    )
 
     permission = providers.Singleton(
         Permission,

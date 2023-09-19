@@ -91,7 +91,7 @@ class ParserService:
                                                                                to_send=to_address)
 
         for processed_txn in processed_transactions:
-            value = (processed_txn["value"] / (int("1" + ("0" * 18))))
+            value = float((processed_txn["value"] / (int("1" + ("0" * 18)))))
             if processed_txn['from'] in my_wallet_from:
                 async with RabbitBroker() as broker:
                     await broker.publish(message={"data": processed_txn['hash'].hex()},

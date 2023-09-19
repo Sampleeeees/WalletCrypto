@@ -21,7 +21,26 @@ $(window).on('load', function (){
 
 
 socket.on('update_product', (data) => {
-    console.log('Updating product', data.id)
+    console.log('Updating product', data.order_id)
+    console.log('Comment product', data.comment)
+    let status = $('#product_status_' + data.order_id)
+    let status_text = status.text()
+    let turning = $('#product_turning_' + data.order_id)
+    if(data.status === 'Failed'){
+        status.text(data.status)
+        status[0].className = get_status_option(data.status)
+    }else if(data.status === "Delivery"){
+        status.text(data.status)
+        status[0].className = get_status_option(data.status)
+    }else if(data.status === "Finish"){
+        status.text(data.status)
+        status[0].className = get_status_option(data.status)
+    }else if(data.status === 'Turning'){
+        status.text(data.status)
+        status[0].className = get_status_option(data.status)
+        turning.text(data.turning)
+        turning.href = "https://sepolia.etherscan.io/tx/"+data.turning
+    }
 })
 
 //--//Встановлюємо для поля select налаштування//--//
@@ -51,7 +70,7 @@ function render_wallets(){
             console.log('Wallets', data)
             for(let i in data){
                 let wallet = data[i]
-                let new_option = new Option(`${wallet.address} (${wallet.balance} ETH)`, wallet.id, false, false); // Новий option з даними гамнця
+                let new_option = new Option(`${wallet.address} (${(wallet.balance).toFixed(3)} ETH)`, wallet.id, false, false); // Новий option з даними гамнця
                 select_user_wallets.append(new_option).trigger('change'); // Додаємо option в select
                 select_user_wallets_buy.append(new_option).trigger('change')
 
@@ -168,7 +187,7 @@ function buy_product(data) {
                     </div>
                     <div class="d-flex ms-3 mt-2">
                         <h5 class="m-0 p-0">Address:</h5>
-                        <a style="font-size: 10px;" href="https://sepolia.etherscan.io/tx/" class="ms-2 my-auto text-break"></a>
+                        <a style="font-size: 10px;" href="https://sepolia.etherscan.io/tx/${data.hash}" class="ms-2 my-auto text-break">${data.hash}</a>
                     </div>
                     <div class="d-flex ms-3 mt-2">
                         <h5 class="m-0 p-0">Price:</h5>
@@ -180,11 +199,11 @@ function buy_product(data) {
                     </div>
                     <div class="d-flex ms-3 mt-2">
                         <h5 class="m-0 p-0">Status:</h5>
-                        <span class="badge bg-label-primary ms-1">New</span>
+                        <span id="product_status_${data.id}" class="badge bg-label-primary ms-1">New</span>
                     </div>           
                    <div class="d-flex ms-3 mt-2 mb-3">
                         <h5 class="m-0 p-0">Turning:</h5>
-                        <p class="ms-2 my-auto"></p>
+                        <a style="font-size: 10px;" href="" id="product_turning_${data.id}" class="ms-2 my-auto"></a>
                     </div>
 
                 </div>
@@ -351,7 +370,7 @@ function render_order(order){
                     </div>           
                    <div class="d-flex ms-3 mt-2 mb-3">
                         <h5 class="m-0 p-0">Turning:</h5>
-                        <p class="ms-2 my-auto">${turning(order.turning)}</p>
+                        <a style="font-size: 10px" href="https://sepolia.etherscan.io/address/${turning(order.turning)}" class="ms-2 my-auto">${turning(order.turning)}</a>
                     </div>
 
                 </div>

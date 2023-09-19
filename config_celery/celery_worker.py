@@ -20,7 +20,7 @@ app.conf.update(
         'random_delivery': {
             'task': 'config_celery.tasks.random_delivery',
             'schedule': 5.0,
-        },
+        }
     }
 )
 

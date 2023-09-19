@@ -1,3 +1,4 @@
+import asyncio
 
 from fastapi import FastAPI
 from sqladmin import Admin
@@ -6,6 +7,7 @@ from starlette.staticfiles import StaticFiles
 
 from config.database import engine
 from config_fastapi import settings
+from config_socketio.client import parse_block
 from src.core.adminAuth import authentication_backend
 
 from src.core.routers import routers

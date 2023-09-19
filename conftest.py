@@ -7,34 +7,37 @@ from sqlalchemy import select
 
 import src
 from config.base import Base
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 
 from config_fastapi import settings
 from src.core.containers import Container
 from src.users.models import User
-from src.users.security import get_password_hash
+from src.users.security import get_password_hash, verify_password
 
 
 @pytest.fixture(scope="session", autouse=True)
 async def test_db_engine():
     engine = create_async_engine(settings.DATABASE_TEST_URI)
-    async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
-        async with async_session_maker() as session:
-            hashed_password = get_password_hash("Qwerty123")
-            user = User(email='testuser@test.com',
-                        username='Test User',
-                        password=hashed_password)
-            session.add(user)
-            await session.commit()
-            await session.refresh(user)
+        db = AsyncSession(bind=conn)
+        await create_user(db)
     yield engine
     #await engine.dispose()
+    await db.rollback()
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
+async def create_user(db: AsyncSession):
+    db_user = User(
+        username=settings.TEST_USER_USERNAME,
+        email=settings.TEST_USER_EMAIL,
+        password=get_password_hash(settings.TEST_USER_PASSWORD),
+    )
+    db.add(db_user)
+    await db.commit()
+    await db.refresh(db_user)
 
 # Стоврення фастапі з контейнером
 def create_test_app() -> FastAPI:
@@ -62,12 +65,19 @@ def app_test():
     return test_app
 
 @pytest.fixture
-async def login_user(client):
-    """Успішна авторизація користувача"""
-    response = await client.post("/api/v1/login/", json={'email': "testuser@test.com",
-                                                             "password": "Qwerty123"})
+async def user_auth(app_test, client):
+
+    response = await client.post("/api/v1/login/", json={"email": settings.TEST_USER_EMAIL,
+                                                         "password": settings.TEST_USER_PASSWORD})
+    print(response.cookies)
+
+    client.headers.update({"access_token": f"Bearer {response.cookies}"})
+    client.cookies.set("access_token", value=f"Bearer {response.cookies}")
+    print("===================")
+    print(client.cookies)
 
     assert response.status_code == 200
+    yield response
 
 @pytest.fixture(scope="session")
 def event_loop(request):

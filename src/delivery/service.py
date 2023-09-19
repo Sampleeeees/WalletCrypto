@@ -9,6 +9,7 @@ from sqlalchemy.orm import joinedload
 
 from config_celery.requests_google import fetch
 from config_fastapi import settings
+from config_fastapi.fastapi_manager import fastapi_mgr
 from src.delivery import schemas
 from src.delivery.models import Order, StatusOrder
 from src.ibay.models import Product
@@ -60,13 +61,20 @@ class DeliveryService:
                 if order.status == StatusOrder.failed:
                     order.status = StatusOrder.turning # Ставимо значення на повернення
                     order.turning = order.transaction.to_send # В поле записуємо адресу на яку було повернути кошти
-                else:
+                    await fastapi_mgr.emit("update_product", {"status": "Turning",
+                                                              "turning": order.transaction.to_send,
+                                                              "order_id": order.id,
+                                                              "comment": 'Отримали що order status == turning то відправляємо повернення коштів'})
+                elif not order.status == StatusOrder.turning:
                     # Виконуємо якщо ця транзакція була успішною
                     if status:
                         request_google = await fetch() # 10000 запитів на гугл
                         # Якщо запит на гугл успішний
                         if request_google:
                             order.status = StatusOrder.delivery
+                            await fastapi_mgr.emit("update_product", {"status": "Delivery",
+                                                                      "order_id": order.id,
+                                                                      "comment": "Запит на гугл пройшов успішно ставимо значення delivery"})
                         # Якщо запит на гугл неуспішний
                         elif not request_google:
                             order.status = StatusOrder.failed
@@ -79,6 +87,10 @@ class DeliveryService:
                                     queue='wallet/wallet_turning',
                                     callback=True)
                                 order.transaction_id = new_transaction_id
+
+                            await fastapi_mgr.emit("update_product", {"status": "Failed",
+                                                                      "order_id": order.id,
+                                                                      "comment": "Запит на гугл пройшов не успішно ставимо status order failed"})
                     # Якщо транзакція все таки не пройшла
                     else:
                         order.status = StatusOrder.failed
@@ -90,6 +102,9 @@ class DeliveryService:
                                 queue='wallet/wallet_turning',
                                 callback=True)
                             order.transaction_id = new_transaction_id
+                        await fastapi_mgr("update_product", {'status': "Failed",
+                                                             "order_id": order.id,
+                                                             "comment": "Якщо транзакція відразу дала помилку"})
                 db.add(order)
                 await db.commit()
                 await db.refresh(order)
@@ -111,6 +126,9 @@ class DeliveryService:
                 random_int = random.randint(0, 1)
                 if random_int == 1:
                     last_order.status = StatusOrder.finish
+                    await fastapi_mgr.emit("update_product", {'status': "Finish",
+                                                              "order_id": last_order.id,
+                                                              "comment": "Ставимо значення finish"})
                 elif random_int == 0:
                     last_order.status = StatusOrder.failed
                     async with RabbitBroker(settings.RABBITMQ_URI) as broker:
@@ -121,6 +139,9 @@ class DeliveryService:
                             queue='wallet/wallet_turning',
                             callback=True)
                         last_order.transaction_id = new_transaction_id
+                    await fastapi_mgr.emit("update_product", {'status': "Failed",
+                                                              "order_id": last_order.id,
+                                                              "comment": "Random сказав що нам потрібо повернути кошти"})
                 await db.commit()
                 await db.refresh(last_order)
                 return 'Random finished'

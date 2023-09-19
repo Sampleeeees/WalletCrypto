@@ -9,9 +9,6 @@ from .celery_worker import app
 
 logger = logging.getLogger(__name__)
 
-# @app.on_after_configure.connect
-# def setup_periodic_tasks(sender, **kwargs):
-#     sender.add_periodic_task(5.0, random_delivery.s())
 
 # Таска для парсингу блоку за його номером
 @app.task(max_retries=3, retry_backoff=True)
@@ -26,6 +23,7 @@ def parse_block(block_number, parser_service: ParserService = Provide[Container.
 def random_delivery(delivery_service: DeliveryService = Provide[Container.delivery_service]):
     loop = asyncio.get_event_loop()
     loop.run_until_complete(delivery_service.random_delivery())
+
 
 
 

@@ -94,6 +94,22 @@ class WalletService:
                 return transaction
             return False
 
+    async def create_transactions(self, transactions: list):
+        async with self.session_factory() as db:
+            for txn in transactions:
+                db_txn = Transaction(
+                    hash=txn.get("txn_hash"),
+                    from_send=txn.get("from_send"),
+                    to_send=txn.get("to_send"),
+                    value=float(txn.get("value")),
+                    date_send=datetime.fromisoformat(txn.get("date_send")[:-5]),
+                    txn_fee=float(txn.get("txn_fee")),
+                    status=TransactionStatus.success if txn.get('status') else TransactionStatus.failed,
+                )
+                db.add(db_txn)
+                await db.commit()
+                await db.refresh(db_txn)
+
     # Отримання адреси на сайті etherscan
     async def get_address_etherscan(self, address: str):
         provide = await self.provider()

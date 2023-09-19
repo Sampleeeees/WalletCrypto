@@ -37,6 +37,11 @@ socket.on('get_txn', (data) => {
     wallet.text(new_balance.toFixed(3))
 })
 
+socket.on("update_wallet_balance", (data) => {
+    let wallet = $("#wallet_balance_" + data.wallet_id)
+    wallet.text((data.balance).toFixed(3))
+})
+
 socket.on('disconnect', () => {
     console.log('disconnect')
 })
