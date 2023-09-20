@@ -58,7 +58,8 @@ async def login_user(response: Response,
     return {"detail": 'Successfully authorization',
             'user_id': user.id,
             'username': user.username,
-            'email': user.email}
+            'email': user.email,
+            'access_token': user.access_token}
 
 @auth_router.post('/logout/', status_code=status.HTTP_200_OK)
 @inject

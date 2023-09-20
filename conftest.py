@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 
 import pytest
 from fastapi import FastAPI
@@ -10,6 +11,7 @@ from config.base import Base
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 
 from config_fastapi import settings
+from src.chats.models import Message
 from src.core.containers import Container
 from src.users.models import User
 from src.users.security import get_password_hash, verify_password
@@ -38,6 +40,9 @@ async def create_user(db: AsyncSession):
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user)
+
+async def create_message(db: AsyncSession):
+    message_user = Message(content='Test message', date_send=datetime.datetime.now())
 
 # Стоврення фастапі з контейнером
 def create_test_app() -> FastAPI:
@@ -69,15 +74,10 @@ async def user_auth(app_test, client):
 
     response = await client.post("/api/v1/login/", json={"email": settings.TEST_USER_EMAIL,
                                                          "password": settings.TEST_USER_PASSWORD})
-    print(response.cookies)
-
-    client.headers.update({"access_token": f"Bearer {response.cookies}"})
-    client.cookies.set("access_token", value=f"Bearer {response.cookies}")
-    print("===================")
-    print(client.cookies)
 
     assert response.status_code == 200
     yield response
+
 
 @pytest.fixture(scope="session")
 def event_loop(request):

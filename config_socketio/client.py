@@ -17,7 +17,6 @@ async def parse_block(parser_service: ParserService = Provide[Container.parser_s
     while True:
         block_number = await parser_service.get_latest_block()
         if block_number is not None:
-    # for i in range(2):
             async with RabbitBroker(settings.RABBITMQ_URI) as broker:
                 await broker.publish(message=block_number, queue='parser/parser_queue')
 

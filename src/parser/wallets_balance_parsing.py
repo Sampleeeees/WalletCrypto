@@ -17,3 +17,4 @@ async def verify_balance(wallet_service: WalletService = Provide[Container.walle
             wallet_balance = await wallet_service.get_balance(item)
             await fastapi_mgr.emit("update_wallet_balance", {"balance": wallet_balance.balance,
                                                              "wallet_id": wallet_balance.id})
+
