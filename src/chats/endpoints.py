@@ -38,7 +38,7 @@ async def get_message_current_user(request: Request,
 async def send_message(request: Request,
                        msg_id: int,
                        permission: Permission = Depends(Provide[Container.permission]),
-                       database: Database = Depends(Provide[Container.database])) -> Type[Message]:
+                       database: Database = Depends(Provide[Container.database])):
     """Отримання повідомлення по id"""
     admin = await permission.is_admin(request)
     if admin:
@@ -94,7 +94,7 @@ async def send_message(request: Request,
                     'date_send': message.date_send.strftime("%m/%d/%Y, %H:%M:%S"),
                     'user_id': message.user_id}
 
-@chat_router.delete('/message/', status_code=status.HTTP_200_OK)
+@chat_router.delete('/message/{msg_id}/', status_code=status.HTTP_200_OK)
 @inject
 async def delete_message(request: Request,
                        msg_id: int,

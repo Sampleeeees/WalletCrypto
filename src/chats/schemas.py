@@ -1,6 +1,5 @@
-from typing import Union, Optional
-from datetime import datetime
 from pydantic import BaseModel
+
 
 class Messages(BaseModel):
     id: int

@@ -1,7 +1,7 @@
-from typing import Optional, List
+from typing import Optional, List, Type, Annotated
 
 from dependency_injector.wiring import inject, Provide
-from fastapi import APIRouter, Depends, Response, Request
+from fastapi import APIRouter, Depends, Response, Request, Body
 
 from starlette import status
 
@@ -19,35 +19,45 @@ user_router = APIRouter()
 
 @user_router.get("/user/profile/", status_code=status.HTTP_200_OK, response_model=schemas.UserProfile)
 @inject
-async def get_current(request: Request, permission: Permission = Depends(Provide[Container.permission])) -> Optional[User]:
+async def get_current(request: Request,
+                      permission: Permission = Depends(Provide[Container.permission])
+                      ) -> schemas.UserProfile:
+    """Отримання даних авторизованого користувача"""
     user = await permission.get_current_user(request)
-    return user
+    return schemas.UserProfile(id=user.id, username=user.username, email=user.email, avatar=user.avatar)
 
-@user_router.get("/user/{user_id}/", status_code=status.HTTP_200_OK)
+@user_router.get("/user/{user_id}/", status_code=status.HTTP_200_OK, response_model=schemas.UserProfile)
 @inject
 async def get_user_by_id(user_id: int, user_service: UserService = Depends(Provide[Container.user_service])):
-    return await user_service.get_user(user_id=user_id)
+    """Отримання даних юзера по id"""
+    user = await user_service.get_user(user_id=user_id)
+    return schemas.UserProfile(id=user.id, username=user.username, email=user.email, avatar=user.avatar)
 
 @user_router.get("/users/", status_code=status.HTTP_200_OK, response_model=List[schemas.UserProfile])
 @inject
-async def get_all_users(user_service: UserService = Depends(Provide[Container.user_service])) -> List[User]:
-    return await user_service.get_users()
+async def get_all_users(user_service: UserService = Depends(Provide[Container.user_service])):
+    """Отримання списку користувачів"""
+    users = await user_service.get_users()
+    return [schemas.UserProfile(id=user.id, username=user.username, email=user.email, avatar=user.avatar) for user in users]
+
 
 @user_router.patch("/user/", status_code=status.HTTP_200_OK, response_model=schemas.UserProfile)
 @inject
 async def update_user(request: Request,
-                      item: schemas.UpdateUserProfile,
+                      item: Annotated[schemas.UpdateUserProfile, Body(openapi_examples=schemas.UpdateUserProfile.extra_fields())],
                       permission: Permission = Depends(Provide[Container.permission]),
-                      user_service: UserService = Depends(Provide[Container.user_service])) -> Optional[User]:
+                      user_service: UserService = Depends(Provide[Container.user_service])):
+    """Оновлення користувача"""
     current_user = await permission.get_current_user(request)
 
     if not current_user:
         raise BadRequestException("Такого користувача не знайдено")
     print('User item', item)
 
-    return await user_service.update_user(current_user=current_user.id, item=item)
+    user = await user_service.update_user(current_user=current_user.id, item=item)
+    return schemas.UserProfile(id=user.id, username=user.username, email=user.email, avatar=user.avatar)
 
-@user_router.delete("/user/", status_code=status.HTTP_200_OK)
+@user_router.delete("/user/", status_code=status.HTTP_200_OK, response_description='Successfully deleted')
 @inject
 async def delete_me(request: Request,
                     response: Response,

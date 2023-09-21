@@ -19,3 +19,10 @@ async def chat(request: Request,
     if not token:
         return RedirectResponse('/login/')
     return templates.TemplateResponse('/chat/chat.html', {'request': request})
+
+@chat_views_router.get('/asyncapi_docs/', include_in_schema=False)
+async def asyncapi_docs(request: Request,
+                        permission: Permission = Depends(Provide[Container.permission])):
+    token = await permission.get_token_bearer(request)
+    if not token:
+        return RedirectResponse('/login/')

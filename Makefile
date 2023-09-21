@@ -17,5 +17,8 @@ reset_rabbitmq:
 fastapi:
 	uvicorn config_fastapi.main:app --reload
 
+asyncapi:
+	python src/chats/asyncapi/generator.py
+
 
 

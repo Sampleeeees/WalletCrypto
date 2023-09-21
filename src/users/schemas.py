@@ -1,10 +1,11 @@
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, validator
 from ..authentication.exceptions import BadRequestException
 
 
 class UserBase(BaseModel):
+    """Базова схема юзера"""
     username: str
     email: EmailStr
 
@@ -12,6 +13,7 @@ class UserBase(BaseModel):
         from_attributes = True
 
 class LoginUser(BaseModel):
+    """Схема для логіна"""
     email: str
     password: str
 
@@ -27,6 +29,7 @@ class LoginUser(BaseModel):
     }
 
 class UserRegistration(UserBase):
+    """Схема для реєстрації"""
     password: str
     repeat_password: str
 
@@ -43,8 +46,9 @@ class UserRegistration(UserBase):
         }
     }
 
-    @field_validator('password')
+    @validator('password')
     def validate_password(cls, value):
+
         # Перевірка на довжину від 8 до 20 символів
         if not 8 <= len(value) <= 20:
             raise BadRequestException("Пароль повинен містити від 8 до 20 символів")
@@ -63,7 +67,7 @@ class UserRegistration(UserBase):
 
         return value
 
-    @field_validator('repeat_password')
+    @validator('repeat_password')
     def validate_repeat_password(cls, value, values):
         print(values.data.get('password'), value)
         password = values.data.get('password')
@@ -73,18 +77,55 @@ class UserRegistration(UserBase):
 
 
 class UserProfile(BaseModel):
+    """Схема для отримання даних авторизованого користувача"""
     id: int
     username: str
     email: EmailStr
     avatar: Any
 
-class UpdateUserProfile(BaseModel):
-    username: Optional[str] = None
-    avatar: Any = None
-    password: Optional[str] = None
-    repeat: Optional[str] = None
+    class Config:
+        schema_extra = {
+            "examples": [
+                {
+                    "id": 0,
+                    "username": "John Doe",
+                    "email": "user@test.gmail.com",
+                    "avatar": "http://example.com/basic.jpg"
+                }
+            ]
+        }
 
-    @field_validator('password')
+
+class UpdateUserProfile(BaseModel):
+    """Схема для оновлення користувача"""
+    username: Union[str, None] = None
+    avatar: Union[Any, None] = None
+    password: Union[str, None] = None
+    repeat: Union[str, None] = None
+
+    @classmethod
+    def extra_fields(cls):
+        return {
+                "full_update": {
+                    "username": "John Doe",
+                    "avatar": "data:image/jpeg;base64...",
+                    "password": "Qwerty123",
+                    "repeat": "Qwerty123",
+                },
+                "update_only_username": {
+                    "username": "John Doe",
+                },
+                "update_only_avatar": {
+                    "avatar": "data:image/jpeg;base63...",
+                },
+                "update_only_password": {
+                    "password": "Qwerty123",
+                    "repeat": "Qwerty123",
+                },
+            }
+
+
+    @validator('password')
     def validate_password(cls, value):
         if value is not None:
             # Перевірка на довжину від 8 до 20 символів
@@ -105,7 +146,7 @@ class UpdateUserProfile(BaseModel):
 
             return value
 
-    @field_validator('repeat')
+    @validator('repeat')
     def validate_repeat_password(cls, value, values):
         print(values.data.get('password'), value)
         password = values.data.get('password')

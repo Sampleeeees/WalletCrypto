@@ -41,7 +41,7 @@ async def get_address_in_etherscan(address: str,
                                    permission: Permission = Depends(Provide[Container.permission]),
                                    wallet_service: WalletService = Depends(Provide[Container.wallet_service])):
     """Отримання url адреси на etherscan"""
-    user = permission.get_current_user(request)
+    user = await permission.get_current_user(request)
     if user:
         return await wallet_service.get_address_etherscan(address)
 

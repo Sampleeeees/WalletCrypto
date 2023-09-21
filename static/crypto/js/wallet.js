@@ -171,9 +171,9 @@ function get_wallet_transaction(wallet_id){
                         </td>
                         <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${txn.from_send}</td>
                         <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${txn.to_send}</td>
-                        <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${txn.value} Eth</td>
+                        <td style="${convert_class_font_size(txn.value)} white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${convert_value(txn.value)} Eth</td>
                         <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${getElapsedTime(data[i].date_send)}</td>
-                        <td style="font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;">${parseFloat(txn.txn_fee)} Eth</td>
+                        <td style="font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;">${parseFloat(txn.txn_fee).toFixed(12)} Eth</td>
                         <td><span class="${get_status_option(txn.status)}">${txn.status}</span></td>
                       </tr>`
                 transaction_body.append(new_transaction)
@@ -209,6 +209,25 @@ function getElapsedTime(dateString) {
     const days = Math.floor(secondsDifference / 86400);
     return `${days} days`;
   }
+}
+
+
+function convert_value(value){
+    let fixed_value = value.toFixed(12)
+    let str_fixed_value = fixed_value.toString()
+    if(str_fixed_value.startsWith("0.000000")){
+        return fixed_value
+    }else{
+        return value
+    }
+}
+
+function convert_class_font_size(value){
+    let fixed_value = value.toFixed(12)
+    let str_fixed_value = fixed_value.toString()
+    if(str_fixed_value.startsWith("0.000000")) {
+        return "font-size: 10px;"
+    }
 }
 
 
