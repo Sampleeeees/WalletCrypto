@@ -18,7 +18,7 @@ from src.users.service import UserService
 
 chat_router = APIRouter()
 
-@chat_router.get('/message/current-user/', status_code=status.HTTP_200_OK)
+@chat_router.get('/message/current-user/', status_code=status.HTTP_200_OK, response_model=List[schemas.Message])
 @inject
 async def get_message_current_user(request: Request,
                                    permission: Permission = Depends(Provide[Container.permission]),
@@ -30,10 +30,15 @@ async def get_message_current_user(request: Request,
             results = await db.execute(select(Message).where(Message.user_id == user.id))
             messages = results.scalars().all()
             if messages:
-                return messages
+                return [schemas.Message(id=message.id,
+                                       content=message.content,
+                                       date_send=message.date_send,
+                                       image=message.image,
+                                       user_id=message.user_id)
+                        for message in messages]
             raise HTTPException(detail='У вас немає жодного повідомлення', status_code=status.HTTP_404_NOT_FOUND)
 
-@chat_router.get('/message/{msg_id}/', status_code=status.HTTP_200_OK)
+@chat_router.get('/message/{msg_id}/', status_code=status.HTTP_200_OK, response_model=schemas.Message)
 @inject
 async def send_message(request: Request,
                        msg_id: int,
@@ -46,7 +51,11 @@ async def send_message(request: Request,
             message = await db.get(Message, msg_id)
             print(message)
             if message:
-                return message
+                return schemas.Message(id=message.id,
+                                       content=message.content,
+                                       image=message.image,
+                                       date_send=message.date_send,
+                                       user_id=message.user_id)
             raise HTTPException(detail='Повідомлення під таким id не знайдено', status_code=status.HTTP_404_NOT_FOUND)
 
 
@@ -94,12 +103,12 @@ async def send_message(request: Request,
                     'date_send': message.date_send.strftime("%m/%d/%Y, %H:%M:%S"),
                     'user_id': message.user_id}
 
-@chat_router.delete('/message/{msg_id}/', status_code=status.HTTP_200_OK)
+@chat_router.delete('/message/{msg_id}/', status_code=status.HTTP_200_OK, response_model=schemas.DeleteMessage)
 @inject
 async def delete_message(request: Request,
-                       msg_id: int,
-                       permission: Permission = Depends(Provide[Container.permission]),
-                       database: Database = Depends(Provide[Container.database])) -> dict:
+                        msg_id: int,
+                        permission: Permission = Depends(Provide[Container.permission]),
+                        database: Database = Depends(Provide[Container.database])) -> dict:
     """Видалення повідомлення"""
     user = await permission.get_current_user(request)
     if user:
@@ -111,13 +120,3 @@ async def delete_message(request: Request,
                 await db.commit()
                 return {'detail': 'Повідомлення видалено'}
             raise HTTPException(detail='Повідомлення під таким id не знайдено', status_code=status.HTTP_404_NOT_FOUND)
-
-
-@chat_router.get('/test/send-message/', status_code=status.HTTP_200_OK)
-@inject
-async def send_test_room_message(request: Request,
-                                 permission: Permission = Depends(Provide[Container.permission]),
-                                 user_service: UserService = Depends(Provide[Container.user_service])):
-    user = await permission.get_current_user(request)
-    if user:
-        await fastapi_mgr.emit('transaction', "my Message", room=f"user_{user.id}")

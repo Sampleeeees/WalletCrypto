@@ -17,8 +17,8 @@ routers = APIRouter()
 
 # endpoint routers
 routers.include_router(auth_router, prefix=API_V1, tags=["Auth"])
-routers.include_router(wallet_router, prefix=API_V1, tags=['Wallet'])
 routers.include_router(user_router, prefix=API_V1, tags=['User'])
+routers.include_router(wallet_router, prefix=API_V1, tags=['Wallet'])
 routers.include_router(chat_router, prefix=API_V1, tags=['Message'])
 routers.include_router(ibay_router, prefix=API_V1, tags=['Product'])
 

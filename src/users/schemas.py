@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 from pydantic import BaseModel, EmailStr, validator
 from ..authentication.exceptions import BadRequestException
@@ -12,39 +12,39 @@ class UserBase(BaseModel):
     class Config:
         from_attributes = True
 
+
 class LoginUser(BaseModel):
     """Схема для логіна"""
     email: str
     password: str
 
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    'email': 'your_email@example.com',
-                    'password': 'Qwerty123'
-                }
-            ]
-        }
-    }
+    class Config:
+        class Config:
+            schema_extra = {
+                "examples": [
+                    {
+                        "email": "user@test.gmail.com",
+                        "password": "Qwerty123",
+                    }
+                ]
+            }
 
 class UserRegistration(UserBase):
     """Схема для реєстрації"""
     password: str
     repeat_password: str
 
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "examples": [
                 {
-                    'username': 'John Doe',
-                    "email": 'user@example.com',
-                    "password": 'Qwerty123',
-                    "repeat_password": "Qwerty123"
+                    "username": "John Doe",
+                    "email": "user@test.gmail.com",
+                    "password": "Qwerty123",
+                    "repeat_password": "Qwerty123",
                 }
             ]
         }
-    }
 
     @validator('password')
     def validate_password(cls, value):
@@ -69,8 +69,7 @@ class UserRegistration(UserBase):
 
     @validator('repeat_password')
     def validate_repeat_password(cls, value, values):
-        print(values.data.get('password'), value)
-        password = values.data.get('password')
+        password = values.get('password')
         if value != password:
             raise BadRequestException("Паролі не співпадають")
         return value
@@ -106,24 +105,65 @@ class UpdateUserProfile(BaseModel):
     @classmethod
     def extra_fields(cls):
         return {
-                "full_update": {
+            "full_update": {
+                "summary": "Full update user data",
+                "description": "Full items for update users data.",
+                "value": {
                     "username": "John Doe",
                     "avatar": "data:image/jpeg;base64...",
                     "password": "Qwerty123",
                     "repeat": "Qwerty123",
                 },
-                "update_only_username": {
+            },
+            "update_only_username": {
+                "summary": "Update only username user ",
+                "description": "Item for update user username",
+                "value": {
                     "username": "John Doe",
                 },
-                "update_only_avatar": {
-                    "avatar": "data:image/jpeg;base63...",
+            },
+            "update_only_avatar": {
+                "summary": "Update only avatar user ",
+                "description": "Item for update avatar username",
+                "value": {
+                    "avatar": "data:image/jpeg;base64...",
                 },
-                "update_only_password": {
+            },
+            "update_only_password": {
+                "summary": "Update only password user ",
+                "description": "Item for update user password",
+                "value": {
+                    "password": "Qwerty",
+                    "repeat": "Qwerty",
+                },
+            },
+            "update_username_avatar": {
+                "summary": "Update username and avatar user ",
+                "description": "Item for update user username and avatar",
+                "value": {
+                    "username": "John Doe",
+                    "avatar": "data:image/jpeg;base64...",
+                },
+            },
+            "update_username_password": {
+                "summary": "Update username and password user ",
+                "description": "Item for update user username and password",
+                "value": {
+                    "username": "John Doe",
                     "password": "Qwerty123",
                     "repeat": "Qwerty123",
                 },
-            }
-
+            },
+            "update_avatar_password": {
+                "summary": "Update avatar and password user ",
+                "description": "Item for update user avatar and password",
+                "value": {
+                    "avatar": "data:image/jpeg;base64...",
+                    "password": "Qwerty123",
+                    "repeat": "Qwerty123",
+                },
+            },
+        }
 
     @validator('password')
     def validate_password(cls, value):
@@ -148,9 +188,23 @@ class UpdateUserProfile(BaseModel):
 
     @validator('repeat')
     def validate_repeat_password(cls, value, values):
-        print(values.data.get('password'), value)
-        password = values.data.get('password')
+        password = values.get('password')
         if value != password:
             raise BadRequestException("Паролі не співпадають")
         return value
+
+
+class DeleteDetail(BaseModel):
+    """Схема для виводу повідомлення про успішне видалення користувача"""
+    detail: str
+
+    class Config:
+        schema_extra = {
+            "examples": [
+                {
+                    "detail": "Користувача видалено"
+                }
+            ]
+        }
+        
 

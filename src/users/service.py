@@ -52,7 +52,7 @@ class UserService:
             user = await self.get_user(user_id=current_user)
             if user:
                 # Цикл для перевірки кожного поля та його значення при patch методі
-                for field, value in item.model_dump().items():
+                for field, value in item.dict().items():
                     try:
                         if field == 'avatar': # Якщо редагуємо поле аватар
                             if value is not None: # Перевіряємо чи не пусте поле value
@@ -92,7 +92,7 @@ class UserService:
                 raise BadRequestException("Такий email вже існує")
 
             # створення користувача
-            form_data = item.model_dump()
+            form_data = item.dict()
             hashed_password = get_password_hash(form_data.get('password'))
             user = User(
                 email=form_data.get('email'),
