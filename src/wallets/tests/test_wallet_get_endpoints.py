@@ -9,7 +9,11 @@ async def test_get_all_wallets(client):
 
     data = response.json()
 
-    assert [] == data
+    assert [{'id': 1,
+             'address': '0xF0265774D447A2329776EAf6a1A362D76ea17d34',
+             'balance': 0.0,
+             'private_key': '0x77642556********************************************************'}
+            ] == data
 
 
 ##############################################################################################
@@ -23,7 +27,11 @@ async def test_get_current_user_wallets(client, user_auth):
 
     data = response.json()
 
-    assert [] == data
+    assert [{'id': 1,
+             'address': '0xF0265774D447A2329776EAf6a1A362D76ea17d34',
+             'balance': 0.0,
+             'private_key': '0x77642556********************************************************'}
+            ] == data
 
 async def test_get_current_user_wallet_error_auth(client):
 

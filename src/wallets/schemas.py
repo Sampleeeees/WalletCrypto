@@ -6,7 +6,7 @@ class WalletBase(BaseModel):
     """Базова схема гаманця"""
     id: int
     address: str
-    balance: Union[int, float, Any]
+    balance: Union[float, int]
 
     class Config:
         from_attributes = True
@@ -88,7 +88,7 @@ class WalletCreate(BaseModel):
     """Схема для стоврення гаманця"""
     id: int
     address: str
-    balance: Union[int, float]
+    balance: Union[float, int]
     private_key: str
     user_id: int
     asset_id: int
@@ -117,7 +117,7 @@ class TransactionCreate(BaseModel):
     """Схема для створення транзакції"""
     from_send: str
     to_send: str
-    value: Union[int, float]
+    value: Union[float, int]
     private_key: str
 
     class Config:

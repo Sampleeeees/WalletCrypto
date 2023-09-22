@@ -4,17 +4,15 @@ import datetime
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
-from sqlalchemy import select
 
 import src
 from config.base import Base
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 
 from config_fastapi import settings
-from src.chats.models import Message
+from factories import create_user, create_admin, create_message, create_blockchain, create_asset, create_wallet
 from src.core.containers import Container
-from src.users.models import User
-from src.users.security import get_password_hash, verify_password
+
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -27,6 +25,9 @@ async def test_db_engine():
         await create_user(db)
         await create_admin(db)
         await create_message(db)
+        await create_blockchain(db)
+        await create_asset(db)
+        await create_wallet(db)
     yield engine
     #await engine.dispose()
     async with engine.begin() as conn:
@@ -34,36 +35,7 @@ async def test_db_engine():
         await db.rollback()
         await conn.run_sync(Base.metadata.drop_all)
 
-async def create_user(db: AsyncSession):
-    db_user = User(
-        username=settings.TEST_USER_USERNAME,
-        email=settings.TEST_USER_EMAIL,
-        password=get_password_hash(settings.TEST_USER_PASSWORD),
-    )
-    db.add(db_user)
-    await db.commit()
-    await db.refresh(db_user)
 
-async def create_admin(db: AsyncSession):
-    db_user = User(
-        username=settings.TEST_ADMIN_USERNAME,
-        email=settings.TEST_ADMIN_EMAIL,
-        password=get_password_hash(settings.TEST_ADMIN_PASSWORD),
-        is_superuser=True
-    )
-    db.add(db_user)
-    await db.commit()
-    await db.refresh(db_user)
-
-async def create_message(db: AsyncSession):
-    message_data = Message(content="Test message",
-                           date_send=datetime.datetime.strptime("2023-09-16T13:53:57.004610", "%Y-%m-%dT%H:%M:%S.%f"),
-                           image="https://cryptowallet.b-cdn.net/basic.jpg",
-                           user_id=1)
-
-    db.add(message_data)
-    await db.commit()
-    await db.refresh(message_data)
 
 # Стоврення фастапі з контейнером
 def create_test_app() -> FastAPI:
@@ -101,6 +73,7 @@ async def user_auth(app_test, client):
     assert response.status_code == 200
     yield response
 
+
 @pytest.fixture
 async def admin_auth(app_test, client):
 
@@ -110,6 +83,10 @@ async def admin_auth(app_test, client):
 
     assert response.status_code == 200
     yield response
+
+@pytest.fixture
+def image_in_base64(app_test) -> str:
+    return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAOCAIAAACU32q7AAAAA3NCSVQICAjb4U/gAAAAGHRFWHRTb2Z0d2FyZQBtYXRlLXNjcmVlbnNob3TIlvBKAAAB9ElEQVQokQXBO2/TQAAA4LvznZMmdmzHjpM2FVWKgholLYjHUFKpCxMDCwNiY+5fQGLujwAEE0JIMIEoAlHBUhAMoKgBRRRIWhJQm4fPPvvss833wXtb7ecvPt7euhjytKDZvcHJr+NpgvHOyy8AEBgTNmNwUwPXrjQ3mgskR+Q8SWCAYZjEkS4bfynq9Hrr7fPw9Z0bYvIzSX0nYLqpQ5TYRYPOHI/OClatvFiB0EGKNKpZCo/9cqUkhIjCJA5hyOKiZXt01ut2mDdFCe8FwqnXly3LMC0dxiLmYegGcpbohiJhmMEEy3IFmEVGPSwTTZ0LKAYxW1o0ncARcdZnXM7biIcGUPOEEAjTKOJKLmPbZhA4QoQIIYzlKeUoTlwwTXMZPB5Osci7LjgaHw+cE6zKgqat1crdh59QZckH/HAwoLIiMTCEOT9GWk5pRJOoWk2HByCDJsh1ROBS2wyRiBMvmwaKBMIEjhSsAQCePtlda5RRwBqep/3+0ddyqmAB5K6p4tMLRV0rvd/7l52zWnVLKtKDt+/6hdJakpGJKs2fspgP9ruHOC89eLS/srq4PA/w1euXRn/UV3tfn705ury+0jiDBO9vbF743vmWYiVbwIxy+Hm7jVPoO2NknLv/eMewtFs3z3qT7oddGGFYrZnNlv0f46Hv3RBPBK8AAAAASUVORK5CYII="
 
 @pytest.fixture(scope="session")
 def event_loop(request):
