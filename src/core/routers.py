@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 from config_fastapi.settings import API_V1
 from src.authentication.views import auth_views_router
-from src.chats.views import chat_views_router
+from src.chats.views import chat_views_router, asyncapi_views_router
 
 from src.ibay.endpoints import ibay_router
 from src.ibay.views import ibay_views_router
@@ -21,6 +21,7 @@ routers.include_router(user_router, prefix=API_V1, tags=['User'])
 routers.include_router(wallet_router, prefix=API_V1, tags=['Wallet'])
 routers.include_router(chat_router, prefix=API_V1, tags=['Message'])
 routers.include_router(ibay_router, prefix=API_V1, tags=['Product'])
+routers.include_router(asyncapi_views_router, tags=["AsyncAPI docs"])
 
 # frontend routers
 routers.include_router(user_views_router)

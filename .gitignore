@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# AsyncAPI yaml file
+asyncapi_docs.yaml

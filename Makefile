@@ -17,8 +17,12 @@ reset_rabbitmq:
 fastapi:
 	uvicorn config_fastapi.main:app --reload
 
-asyncapi:
+asyncapi_docs:
 	python src/chats/asyncapi/generator.py
+	sudo ag asyncapi_docs.yaml @asyncapi/html-template -o static/async_api --force-write
+	sudo mv static/async_api/index.html templates/chat/asyncapi
+	sudo chmod 746 templates/chat/asyncapi/index.html
+	python src/chats/asyncapi/html_fixer.py
 
 
 
