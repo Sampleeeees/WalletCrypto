@@ -1,6 +1,7 @@
 import asyncio
 
 from fastapi import FastAPI
+from fastapi.openapi.models import ExternalDocumentation
 from sqladmin import Admin
 from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
@@ -24,7 +25,40 @@ from src.chats.admin import MessageAdmin
 def create_app() -> FastAPI:
     container = Container()
 
-    app = FastAPI(title=settings.PROJECT_NAME, description='API for CryptoWallet')
+    tags_metadata = [
+        {
+            "name": "AsyncAPI docs",
+            "externalDocs": {
+                "description": "AsyncAPI documentation for chat",
+                "url": "http://127.0.0.1:8000/asyncapi_docs/",
+            },
+        },
+        {
+            "name": "Auth",
+            "description": "Authorization or registration"
+        },
+        {
+            "name": "User",
+            "description": "User CRUD operation"
+        },
+        {
+            "name": "Wallet",
+            "description": "Wallet operations"
+        },
+        {
+            "name": "Message",
+            "description": "Message operations"
+        },
+        {
+            "name": "Product",
+            "description": "Product operations"
+        }
+    ]
+
+    app = FastAPI(title=settings.PROJECT_NAME,
+                  description='API for CryptoWallet',
+                  version="1.0.1",
+                  openapi_tags=tags_metadata)
 
     app.container = container
     # broker.container = container

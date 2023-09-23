@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  db:
+    build:
+      context: deploy/postgres
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+
+
+  backend:
+    build:
+      context: .
+      dockerfile: deploy/apps/Dockerfile
+    env_file:
+      - .env
+    command: make fastapi
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:3.9-management-alpine
+
+  redis:
+    image: 'redis:alpine'
+
+  parser:
+    build:
+      context: ./
+      dockerfile: deploy/apps/Dockerfile
+    command: make parser
+    depends_on:
+      - rabbitmq
+
+  socket:
+    build:
+      context: ./
+      dockerfile: deploy/apps/Dockerfile
+    command: make socketio
+    ports:
+      - "8001:8001"
+    depends_on:
+      - backend
+
+  nginx:
+    build:
+      context: deploy/nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend

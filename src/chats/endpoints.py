@@ -16,7 +16,9 @@ from src.chats.service import ChatService
 from src.core.containers import Container
 from src.users.service import UserService
 
+
 chat_router = APIRouter()
+
 
 @chat_router.get('/message/current-user/', status_code=status.HTTP_200_OK, response_model=List[schemas.Message])
 @inject

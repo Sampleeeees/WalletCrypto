@@ -21,7 +21,7 @@ async def chat(request: Request,
         return RedirectResponse('/login/')
     return templates.TemplateResponse('/chat/chat.html', {'request': request})
 
-@asyncapi_views_router.get('/asyncapi_docs/')
+@asyncapi_views_router.get('/asyncapi_docs/', include_in_schema=False)
 @inject
 async def asyncapi_docs(request: Request,
                         permission: Permission = Depends(Provide[Container.permission])):
