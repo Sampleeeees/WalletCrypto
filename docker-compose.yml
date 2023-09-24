@@ -3,54 +3,85 @@ version: "3.8"
 services:
   db:
     build:
-      context: deploy/postgres
+      context: deploy/postgresql
       dockerfile: Dockerfile
     env_file:
       - .env
+    depends_on:
+      - rabbitmq
 
-
-  backend:
+  web_api:
     build:
       context: .
       dockerfile: deploy/apps/Dockerfile
     env_file:
       - .env
-    command: make fastapi
-    ports:
-      - "8000:8000"
+    command: poetry run uvicorn config_fastapi.main:app --reload --host 0.0.0.0 --port 8000 --workers 2
     depends_on:
-      - db
       - rabbitmq
 
   rabbitmq:
-    image: rabbitmq:3.9-management-alpine
+    image: rabbitmq:management
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "5673:5672"
+
+  propan:
+    build:
+      context: ./
+      dockerfile: deploy/apps/Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      - rabbitmq
+    command: poetry run propan run config_propan.propan_depends:app --reload
+
 
   redis:
     image: 'redis:alpine'
 
-  parser:
+
+  celery:
+    restart: always
+    command: poetry run celery -A config_celery.celery_app worker --loglevel=info
     build:
       context: ./
       dockerfile: deploy/apps/Dockerfile
-    command: make parser
+    env_file:
+      - .env
     depends_on:
+      - db
+      - web_api
       - rabbitmq
 
-  socket:
+#  parser:
+#    build:
+#      context: ./
+#      dockerfile: deploy/apps/Dockerfile
+#    command: poetry run python config_socketio/client.py
+#    depends_on:
+#      - rabbitmq
+#      - sockets
+
+  sockets:
     build:
       context: ./
       dockerfile: deploy/apps/Dockerfile
-    command: make socketio
+    command: poetry run uvicorn config_socketio.socket_application:socketio_app --reload --host 0.0.0.0 --port 8001
     ports:
       - "8001:8001"
     depends_on:
-      - backend
+      - celery
+      - rabbitmq
+      - redis
 
   nginx:
     build:
       context: deploy/nginx
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
-      - backend
+      - web_api

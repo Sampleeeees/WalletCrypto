@@ -14,7 +14,7 @@ propan:
 
 socketio:
 	fuser -k 8001/tcp
-	uvicorn config_socketio.socket_application:socketio_app --reload --host 127.0.0.1 --port 8001
+	uvicorn config_socketio.socket_application:socketio_app --reload --host 0.0.0.0 --port 8001
 
 
 parser:
@@ -28,7 +28,7 @@ reset_rabbitmq:
 
 
 fastapi:
-	uvicorn config_fastapi.main:app --reload --workers 2
+	uvicorn config_fastapi.main:app --reload --host 0.0.0.0 --port 8000 --workers 2
 
 asyncapi_docs:
 	python src/chats/asyncapi/generator.py

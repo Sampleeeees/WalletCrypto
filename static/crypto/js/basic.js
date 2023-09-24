@@ -11,8 +11,6 @@ const user_id = $('#user_id')
 let eventSent = false;
 
 
-
-
 socket.on('connect', () => {
     console.log('connected')
 })
@@ -26,6 +24,7 @@ socket.on('send_txn', (data) => {
     toastr.info(`${data.message}.<br> <p style="font-size: 12px;">${data.address}</p> <br> <a style="font-size: 12px;" href="https://sepolia.etherscan.io/tx/${data.txn_hash}">Посилання на транзакцію</a>`)
     let new_balance = parseFloat(wallet_balance) - data.value
     wallet.text(new_balance.toFixed(3))
+
 })
 
 socket.on('get_txn', (data) => {

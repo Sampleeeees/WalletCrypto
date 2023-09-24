@@ -34,6 +34,12 @@ class ParserService:
     async def get_or_update_block_number(self, block_number: int = None, action: str = None):
         async with self.session_factory() as db:
             get_block_number = await db.get(LastSuccessBlock, 1)
+            if get_block_number.block_number is None:
+                get_block_number.block_number = block_number
+                db.add(get_block_number)
+                await db.commit()
+                await db.refresh(get_block_number)
+
             if action == 'update':
                 get_block_number.block_number = block_number
                 db.add(get_block_number)
@@ -47,7 +53,7 @@ class ParserService:
         block_number = provider.eth.get_block('latest')['number'] # останній номер блоку в інфурі
 
         if self.latest_block is None:
-            self.latest_block = await self.get_or_update_block_number()
+            self.latest_block = await self.get_or_update_block_number(block_number)
             return self.latest_block
 
         print("---------")

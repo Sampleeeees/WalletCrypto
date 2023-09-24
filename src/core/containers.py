@@ -10,7 +10,7 @@ from src.chats.service import ChatService
 from src.core.storage_bunny import BunnyStorage
 from src.delivery.service import DeliveryService
 from src.ibay.service import IBayService
-from src.parser.moralis_service import MoralisService
+# from src.parser.moralis_service import MoralisService
 from src.parser.service import ParserService
 from src.users.service import UserService
 from src.wallets.service import WalletService
@@ -39,10 +39,10 @@ class Container(containers.DeclarativeContainer):
         http_provider_url=settings.INFURA_URI_HTTP,
     )
 
-    moralis_service = providers.Singleton(
-        MoralisService,
-        api_key=settings.MORALIS_API_KEY
-    )
+    # moralis_service = providers.Singleton(
+    #     MoralisService,
+    #     api_key=settings.MORALIS_API_KEY
+    # )
 
     user_service = providers.Factory(
         UserService,

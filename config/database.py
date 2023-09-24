@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncAttrs, AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 
 from config_fastapi import settings
-
 logger = logging.getLogger(__name__)
 engine = create_async_engine(settings.DATABASE_URI, echo=True, future=True) # engine для sqladmin
 
@@ -30,6 +29,15 @@ class Database:
             self._session_factory = async_sessionmaker(self.engine, autoflush=False, expire_on_commit=False)
         else:
             self._session_factory = async_sessionmaker(engine, autoflush=False, expire_on_commit=False)
+
+    async def init_db(self):
+        async with engine.begin() as conn:
+            # await conn.run_sync(SQLModel.metadata.drop_all)
+            await conn.run_sync(Base.metadata.create_all)
+
+    async def del_db(self):
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.drop_all)
 
     # Отримання сесії
     @asynccontextmanager

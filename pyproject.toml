@@ -6,7 +6,7 @@ authors = ["Dima Rubets <rubetsdima100@gmail.com>"]
 
 [tool.poetry.dependencies]
 # Compatible Python versions
-python = ">=3.8,<4.0"
+python = "^3.9"
 fastapi = "^0.103.0"
 uvicorn = {extras = ["standard"], version = "^0.23.1"}
 sqlalchemy = "^2.0.19"
@@ -35,7 +35,7 @@ celery = "^5.3.1"
 redis = "^4.6.0"
 flower = "^2.0.1"
 asgiref = "^3.7.2"
-bunnycdnpython = "^0.0.8"
+bunnycdnpython = ">=0.0.8"
 requests = "^2.31.0"
 typing-extensions = "^4.7.1"
 sqladmin = "^0.14.1"
@@ -43,6 +43,7 @@ itsdangerous = "^2.1.2"
 npm = "^0.1.1"
 asyncapi-schema-pydantic = "^1.0.1"
 asyncapi = {extras = ["docs", "http", "redis", "subscriber", "yaml"], version = "^0.14.1"}
+
 
 [tool.pytest.ini_options]
 

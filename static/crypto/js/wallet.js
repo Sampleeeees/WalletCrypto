@@ -230,7 +230,7 @@ function convert_class_font_size(value){
     }
 }
 
-
+    
 function get_status_option(status){
     if (status === 'Pending'){
         return 'badge bg-label-warning me-1'

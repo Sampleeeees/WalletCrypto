@@ -1,14 +1,11 @@
-import asyncio
 
 from fastapi import FastAPI
-from fastapi.openapi.models import ExternalDocumentation
 from sqladmin import Admin
 from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 
 from config.database import engine
 from config_fastapi import settings
-from config_socketio.client import parse_block
 from src.core.adminAuth import authentication_backend
 
 from src.core.routers import routers
@@ -87,6 +84,11 @@ def create_app() -> FastAPI:
     admin.add_view(ProductAdmin)
     admin.add_view(OrderAdmin)
     admin.add_view(MessageAdmin)
+
+    @app.on_event("startup")
+    async def on_startup():
+        container.database.provided.init_db()
+
 
 
     # @app.on_event('startup')

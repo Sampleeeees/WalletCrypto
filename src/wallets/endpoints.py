@@ -10,7 +10,7 @@ from dependency_injector.wiring import Provide, inject
 from src.core.containers import Container
 from .models import Wallet
 from .service import WalletService
-from ..parser.moralis_service import MoralisService
+# from ..parser.moralis_service import MoralisService
 from ..users.service import UserService
 
 wallet_router = APIRouter()
@@ -78,16 +78,16 @@ async def create_wallet(request: Request,
 async def import_wallet(item: schemas.WalletImport,
                         request: Request,
                         wallet_service: WalletService = Depends(Provide[Container.wallet_service]),
-                        permission: Permission = Depends(Provide[Container.permission]),
-                        moralis_service: MoralisService = Depends(Provide[Container.moralis_service])):
+                        permission: Permission = Depends(Provide[Container.permission])):
+                        # moralis_service: MoralisService = Depends(Provide[Container.moralis_service])):
     """Імпортування гаманця за допомогою приватного ключа"""
     user = await permission.get_current_user(request)
     if user:
         wallet = await wallet_service.import_wallet(item.private_key, user.id)
         address = schemas.CheckBalance(address=wallet.address)
-        transactions = await moralis_service.get_all_transactions(address=wallet.address)
-        if transactions:
-            await wallet_service.create_transactions(transactions)
+        # transactions = await moralis_service.get_all_transactions(address=wallet.address)
+        # if transactions:
+        #     await wallet_service.create_transactions(transactions)
         await wallet_service.get_balance(address)
         return schemas.WalletList(id=wallet.id,
                                    address=wallet.address,
